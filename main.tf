@@ -1,0 +1,61 @@
+module "vpc" {
+  source             = "terraform-aws-modules/vpc/aws"
+  name               = "terraform-vpc"
+  cidr               = "10.0.0.0/16"
+  azs                = ["us-east-1a"]
+  public_subnets     = ["10.0.1.0/24"]
+  private_subnets    = ["10.0.2.0/24"]
+  enable_nat_gateway = true
+}
+
+resource "aws_security_group" "netbox_lab" {
+  vpc_id = module.vpc.vpc_id
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_out" {
+  security_group_id = aws_security_group.netbox_lab.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_https" {
+  security_group_id = aws_security_group.netbox_lab.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_iam_role" "lab_instance_role" {
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Effect    = "Allow"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
+  role       = aws_iam_role.lab_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "lab_instance_profile" {
+  role = aws_iam_role.lab_instance_role.name
+}
+
+data "aws_ssm_parameter" "al2023_ami_arm64" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
+}
+
+resource "aws_instance" "lab_instance" {
+  ami                         = data.aws_ssm_parameter.al2023_ami_arm64.value
+  instance_type               = "t4g.xlarge"
+  subnet_id                   = module.vpc.public_subnets[0]
+  vpc_security_group_ids      = [aws_security_group.netbox_lab.id]
+  user_data                   = file("${path.module}/userdata.sh")
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.lab_instance_profile.name
+}
