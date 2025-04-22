@@ -1,4 +1,4 @@
-= how to use
+# how to use
 - setup your aws auth
 - clone this repo
 - `cd netbox-lab`
