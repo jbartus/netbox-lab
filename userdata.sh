@@ -59,3 +59,11 @@ TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-meta
 PUBIP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" 'http://169.254.169.254/latest/meta-data/public-ipv4' -s)
 sed -i "s/netbox.example.com/$PUBIP/" /etc/nginx/conf.d/netbox.conf
 systemctl restart nginx
+
+# demo data
+systemctl stop netbox
+sudo -u postgres psql -c "DROP database netbox;"
+sudo -u postgres psql -c "CREATE database netbox;"
+wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.2.sql
+sudo -u postgres psql netbox < netbox-demo-v4.2.sql
+systemctl start netbox
