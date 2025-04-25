@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -xeuo pipefail
+
 # system packages
 dnf install -y gcc libxml2-devel libxslt-devel libffi-devel libpq-devel openssl-devel redhat-rpm-config
 
@@ -55,9 +57,9 @@ mkdir /etc/ssl/private
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/netbox.key -out /etc/ssl/certs/netbox.crt -subj "/C=US/ST=State/L=City/O=Organization/CN=netbox"
 dnf install -y nginx
 head -n -7 /opt/netbox/contrib/nginx.conf > /etc/nginx/conf.d/netbox.conf
-TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" -s)
-PUBIP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" 'http://169.254.169.254/latest/meta-data/public-ipv4' -s)
-sed -i "s/netbox.example.com/$PUBIP/" /etc/nginx/conf.d/netbox.conf
+TOKEN="$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60" -s)"
+PUBIP="$(curl -H "X-aws-ec2-metadata-token: ${TOKEN}" 'http://169.254.169.254/latest/meta-data/public-ipv4' -s)"
+sed -i "s/netbox.example.com/${PUBIP}/" /etc/nginx/conf.d/netbox.conf
 systemctl restart nginx
 
 # demo data
