@@ -54,6 +54,7 @@ resource "aws_instance" "lab_instance" {
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.netbox_lab.id]
   user_data                   = file("${path.module}/userdata.sh")
+  #user_data                   = file("${path.module}/nbe.sh")
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.lab_instance_profile.name
 
