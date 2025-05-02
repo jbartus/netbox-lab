@@ -50,7 +50,7 @@ data "aws_ssm_parameter" "al2023_ami_arm64" {
 
 resource "aws_instance" "lab_instance" {
   ami                         = data.aws_ssm_parameter.al2023_ami_arm64.value
-  instance_type               = "t3a.xlarge"
+  instance_type               = "t3a.2xlarge"
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.netbox_lab.id]
   user_data                   = file("${path.module}/userdata.sh")
