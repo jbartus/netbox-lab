@@ -53,7 +53,7 @@ resource "aws_instance" "nbe_instance" {
   instance_type               = "t3a.2xlarge"
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.nbe_lab.id]
-  user_data                   = file("${path.module}/nbe.sh")
+  user_data                   = templatefile("${path.module}/nbe.sh.tpl", { nbe_token = var.nbe_token })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.nbe_instance_profile.name
 
