@@ -61,3 +61,11 @@ resource "aws_instance" "nbe_instance" {
     volume_size = 100
   }
 }
+
+output "nbe_ssm_command" {
+  value = "aws --region us-east-1 ssm start-session --target ${aws_instance.nbe_instance.id}"
+}
+
+output "nbe_console_url" {
+  value = "https://${aws_instance.nbe_instance.public_ip}:30000"
+}

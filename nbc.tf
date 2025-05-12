@@ -49,3 +49,11 @@ resource "aws_instance" "nbc_instance" {
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.nbc_instance_profile.name
 }
+
+output "nbc_ssm_command" {
+  value = "aws --region us-east-1 ssm start-session --target ${aws_instance.nbc_instance.id}"
+}
+
+output "nbc_url" {
+  value = "https://${aws_instance.nbc_instance.public_ip}"
+}
