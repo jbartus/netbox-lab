@@ -27,6 +27,16 @@ module "eks" {
   }
 }
 
-output "update_kubeconfig" {
-  value = "aws --region us-east-1 eks update-kubeconfig --name ${module.eks.cluster_name}"
+resource "null_resource" "kubectl" {
+  depends_on = [module.eks]
+  provisioner "local-exec" {
+    command = "aws --region us-east-1 eks update-kubeconfig --name ${module.eks.cluster_name}"
+  }
+}
+
+resource "null_resource" "annotate_storageclass" {
+  depends_on = [null_resource.kubectl]
+  provisioner "local-exec" {
+    command = "kubectl annotate storageclass gp2 storageclass.kubernetes.io/is-default-class=true"
+  }
 }
