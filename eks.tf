@@ -26,3 +26,7 @@ module "eks" {
     }
   }
 }
+
+output "update_kubeconfig" {
+  value = "aws --region us-east-1 eks update-kubeconfig --name ${module.eks.cluster_name}"
+}
