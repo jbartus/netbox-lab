@@ -8,7 +8,11 @@ curl -f "https://app.enterprise.netboxlabs.com/embedded/netbox-enterprise/stable
 
 tar zxvf netbox-enterprise-stable.tgz
 
-./netbox-enterprise install --license license.yaml --admin-console-password ${nbe_console_password}
+cat << 'EOF' > config.yaml
+${config_yaml}
+EOF
+
+./netbox-enterprise install --license license.yaml --admin-console-password ${nbe_console_password} --config-values config.yaml
 
 dnf -y install docker
 systemctl enable --now docker

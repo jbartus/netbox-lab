@@ -56,6 +56,9 @@ resource "aws_instance" "nbe_instance" {
   user_data = templatefile("${path.module}/nbe.sh.tpl", {
     nbe_token            = var.nbe_token,
     nbe_console_password = var.nbe_console_password,
+    config_yaml = templatefile("${path.module}/config.yaml.tpl", {
+      nbe_admin_password = var.nbe_admin_password
+    })
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.nbe_instance_profile.name
@@ -71,4 +74,8 @@ output "nbe_ssm_command" {
 
 output "nbe_console_url" {
   value = "https://${aws_instance.nbe_instance.public_ip}:30000"
+}
+
+output "nbe_webui_url" {
+  value = "https://${aws_instance.nbe_instance.public_ip}"
 }

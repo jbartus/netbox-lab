@@ -1,0 +1,3 @@
+nbe_token            = ""
+nbe_console_password = "6chars"
+nbe_admin_password   = "12characters"
