@@ -27,7 +27,7 @@ mkdir -p /opt/netbox/
 cd /opt/netbox/
 dnf install -y git
 git clone https://github.com/netbox-community/netbox.git .
-git checkout v4.2.7
+git checkout v4.3.1
 groupadd --system netbox
 adduser --system -g netbox netbox
 chown --recursive netbox /opt/netbox/netbox/media/
@@ -63,10 +63,19 @@ sed -i "s/netbox.example.com/${PUBIP}/" /etc/nginx/conf.d/netbox.conf
 systemctl restart nginx
 
 # demo data
+systemctl stop nginx
+systemctl stop netbox-rq
 systemctl stop netbox
+systemctl stop redis6
+
 sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'netbox';"
 sudo -u postgres psql -c "DROP database netbox;"
 sudo -u postgres psql -c "CREATE database netbox;"
-wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.2.sql
-sudo -u postgres psql netbox < netbox-demo-v4.2.sql
+
+wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.3.sql
+sudo -u postgres psql netbox < netbox-demo-v4.3.sql
+
+systemctl start redis6
 systemctl start netbox
+systemctl start netbox-rq
+systemctl start nginx
