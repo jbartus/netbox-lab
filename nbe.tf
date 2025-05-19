@@ -44,10 +44,6 @@ resource "aws_iam_instance_profile" "nbe_instance_profile" {
   role = aws_iam_role.nbe_instance_role.name
 }
 
-data "aws_ssm_parameter" "al2023_ami_x86-64" {
-  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
-}
-
 resource "aws_instance" "nbe_instance" {
   ami                    = data.aws_ssm_parameter.al2023_ami_x86-64.value
   instance_type          = "t3a.2xlarge"

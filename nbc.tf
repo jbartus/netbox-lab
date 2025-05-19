@@ -36,10 +36,6 @@ resource "aws_iam_instance_profile" "nbc_instance_profile" {
   role = aws_iam_role.nbc_instance_role.name
 }
 
-data "aws_ssm_parameter" "al2023_ami_arm64" {
-  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
-}
-
 resource "aws_instance" "nbc_instance" {
   ami                         = data.aws_ssm_parameter.al2023_ami_arm64.value
   instance_type               = "t4g.xlarge"
