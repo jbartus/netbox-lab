@@ -15,10 +15,10 @@ module "eks" {
 
   eks_managed_node_groups = {
     spot = {
-      min_size      = 1
+      min_size      = 2
       max_size      = 6
-      desired_size  = 2
-      instance_type = ["t4g.large"]
+      desired_size  = 3
+      instance_type = ["t4g.xlarge"]
       capacity_type = "SPOT"
       iam_role_additional_policies = {
         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
