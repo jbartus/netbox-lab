@@ -16,6 +16,14 @@ resource "aws_vpc_security_group_ingress_rule" "nbe_allow_https_in" {
   ip_protocol       = "tcp"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "nbe_allow_grpc_in" {
+  security_group_id = aws_security_group.nbe_lab.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+}
+
 resource "aws_vpc_security_group_ingress_rule" "nbe_allow_30k_in" {
   security_group_id = aws_security_group.nbe_lab.id
   cidr_ipv4         = "0.0.0.0/0"
