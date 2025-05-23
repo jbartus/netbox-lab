@@ -46,7 +46,7 @@ resource "aws_iam_instance_profile" "nbe_instance_profile" {
 
 resource "aws_instance" "nbe_instance" {
   ami                    = data.aws_ssm_parameter.al2023_ami_x86-64.value
-  instance_type          = "t3a.2xlarge"
+  instance_type          = "m7i.2xlarge"
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.nbe_lab.id]
   user_data = templatefile("${path.module}/nbe.sh.tpl", {
