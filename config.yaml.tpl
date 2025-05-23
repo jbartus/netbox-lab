@@ -6,5 +6,7 @@ spec:
       value: ACCEPT
     superuser_password:
       valuePlaintext: ${nbe_admin_password}
+    replicas:
+      value: "1"
     netbox_configuration_py:
       value: PLUGINS=["netbox_topology_views"]
