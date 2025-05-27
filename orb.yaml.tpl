@@ -6,8 +6,8 @@ orb:
     common:
       diode:
         target: grpc://${diode_server}:80/diode
-        client_id: FIXME
-        client_secret: FIXME
+        client_id: $${DIODE_CLIENT_ID}
+        client_secret: $${DIODE_CLIENT_SECRET}
         agent_name: orb1
   policies:
     network_discovery:
@@ -15,4 +15,5 @@ orb:
         config:
         scope:
           targets: 
-            - 10.0.1.0/24
+            - ${public_subnet}
+          fast_mode: True

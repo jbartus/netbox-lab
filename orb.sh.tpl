@@ -9,12 +9,17 @@ chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
 docker pull netboxlabs/orb-agent:latest
 
-mkdir /opt/orb
-cd /opt/orb
+cd /root
 
 cat << 'EOF' > orb.yaml
 ${orb_yaml}
 EOF
 
-echo "docker run -u root -v /opt/orb:/opt/orb/ netboxlabs/orb-agent:latest run -c /opt/orb/orb.yaml" > /opt/orb/scan.sh
-chmod +x /opt/orb/scan.sh
+cat << 'EOF' > scan.sh
+docker run -u root -v /root:/opt/orb/ \
+  -e DIODE_CLIENT_ID=$${DIODE_CLIENT_ID} \
+  -e DIODE_CLIENT_SECRET=$${DIODE_CLIENT_SECRET} \
+  netboxlabs/orb-agent:latest run -c /opt/orb/orb.yaml
+EOF
+
+chmod +x scan.sh

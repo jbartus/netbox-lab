@@ -29,11 +29,16 @@ resource "aws_iam_instance_profile" "orb_instance_profile" {
 }
 
 resource "aws_instance" "orb_instance" {
-  ami                         = data.aws_ssm_parameter.al2023_ami_arm64.value
-  instance_type               = "t4g.large"
-  subnet_id                   = module.vpc.public_subnets[0]
-  vpc_security_group_ids      = [aws_security_group.nbc.id]
-  user_data                   = templatefile("${path.module}/orb.sh.tpl", { orb_yaml = templatefile("${path.module}/orb.yaml.tpl", { diode_server = aws_instance.nbe_instance.private_ip }) })
+  ami                    = data.aws_ssm_parameter.al2023_ami_arm64.value
+  instance_type          = "t4g.large"
+  subnet_id              = module.vpc.public_subnets[0]
+  vpc_security_group_ids = [aws_security_group.nbc.id]
+  user_data = templatefile("${path.module}/orb.sh.tpl", {
+    orb_yaml = templatefile("${path.module}/orb.yaml.tpl", {
+      diode_server  = aws_instance.nbe_instance.private_ip,
+      public_subnet = module.vpc.public_subnet_objects[0].cidr_block
+    })
+  })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.orb_instance_profile.name
 }
