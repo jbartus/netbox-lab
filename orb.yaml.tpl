@@ -17,3 +17,4 @@ orb:
           targets: 
             - ${public_subnet}
           fast_mode: True
+          timing: 5
