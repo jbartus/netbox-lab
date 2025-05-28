@@ -13,8 +13,3 @@ ${config_yaml}
 EOF
 
 ./netbox-enterprise install --license license.yaml --admin-console-password ${nbe_console_password} --config-values config.yaml
-
-dnf -y install docker
-systemctl enable --now docker
-curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/libexec/docker/cli-plugins/docker-compose
-chmod +x /usr/libexec/docker/cli-plugins/docker-compose
