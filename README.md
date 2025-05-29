@@ -4,6 +4,11 @@ this repo sets up three instances of netbox
 - `eks.tf` and `nbc-helm.sh` setup netbox community on an EKS (kubernetes) cluster
 - `nbe.tf`, `nbe.sh.tpl` and `config.yaml.tpl` setup netbox enterprise (on-prem) on a standalone vm
 
+# pre-req
+```
+which terraform aws kubectl
+```
+
 # how to use
 - setup your aws auth
 - clone this repo
