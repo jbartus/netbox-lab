@@ -1,11 +1,25 @@
 #!/bin/bash
 
-helm install nbc oci://ghcr.io/netbox-community/netbox-chart/netbox --namespace nbc --create-namespace
+helm install netbox oci://ghcr.io/netbox-community/netbox-chart/netbox \
+  --namespace netbox \
+  --create-namespace \
+  --set persistence.enabled=false \
+  --set postgresql.enabled=false \
+  --set externalDatabase.host=$(terraform output -raw postgres_host) \
+  --set externalDatabase.password=$(terraform output -raw postgres_password) \
+  --set valkey.enabled=false \
+  --set tasksDatabase.host=$(terraform output -raw redis_host) \
+  --set cachingDatabase.host=$(terraform output -raw redis_host)
 
-# sleep 400
-#export POD_NAME=$(kubectl get pods --namespace "nbc" -l "app.kubernetes.io/name=netbox,app.kubernetes.io/instance=nbc" -o jsonpath="{.items[0].metadata.name}")
-#kubectl port-forward $POD_NAME 8080:8080 -n nbc
+kubectl -n netbox create secret generic netbox-valkey \
+  --from-literal=cache_password="" \
+  --from-literal=task_password=""
+
+# admin password
+kubectl -n netbox get secrets netbox-superuser -o jsonpath="{.data.password}" | base64 --decode
+
+# port forward
+# kubectl -n netbox port-forward svc/netbox 8080:80
 
 # cleanup
-# helm -n nbc uninstall nbc
-# kubectl delete pvc -n nbc --all
+# helm -n netbox uninstall netbox
