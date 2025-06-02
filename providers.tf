@@ -12,7 +12,7 @@ data "external" "whoami" {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
   default_tags {
     tags = {
       Owner = data.external.whoami.result.username

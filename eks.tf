@@ -30,7 +30,7 @@ module "eks" {
 resource "null_resource" "kubectl" {
   depends_on = [module.eks]
   provisioner "local-exec" {
-    command = "aws --region us-east-1 eks update-kubeconfig --name ${module.eks.cluster_name}"
+    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name}"
   }
 }
 
