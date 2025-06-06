@@ -12,7 +12,7 @@ resource "aws_instance" "orb_instance" {
   ami                    = data.aws_ssm_parameter.al2023_ami_arm64.value
   instance_type          = "t4g.large"
   subnet_id              = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [aws_security_group.nbc.id]
+  vpc_security_group_ids = [aws_security_group.orb.id]
   user_data = templatefile("${path.module}/orb.sh.tpl", {
     orb_yaml = templatefile("${path.module}/orb.yaml.tpl", {
       diode_server  = aws_instance.nbe_instance.private_ip,
