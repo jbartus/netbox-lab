@@ -1,5 +1,5 @@
 aws_region           = "us-east-1"
 nbe_token            = "your-nbe-token"
-nbe_console_password = "your-console-password"
-nbe_admin_password   = "your-admin-password"
-postgres_password    = "your-postgres-password"
+nbe_console_password = "6chars"
+nbe_admin_password   = "12characters"
+postgres_password    = "yesql123"

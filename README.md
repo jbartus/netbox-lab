@@ -15,7 +15,7 @@ which terraform aws kubectl helm
 - `cd netbox-lab`
 - `terraform init`
 - `cp terraform.tfvars.example terraform.tfvars`
-- edit your nbe license id into `terraform.tfvars`
+- edit `terraform.tfvars` to add your nbe license id and define your region
 - `terraform apply`
 - wait ~12 minutes
 - click the output links
