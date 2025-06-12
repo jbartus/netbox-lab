@@ -6,10 +6,7 @@ this repo sets up three instances of netbox
 
 # pre-req
 ## OSX 
-Install the AWS session manager plugin using homebrew.
-```bash
-brew install --cask session-manager-plugin
-```
+Install the AWS session manager plugin following [these](https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html) instructions.
 
 Ensure the other dependencies are installed
 ```bash
