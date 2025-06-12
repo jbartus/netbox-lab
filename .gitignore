@@ -38,3 +38,4 @@ terraform.rc
 
 # Ignore any graphing images
 *.png
+*.svg
