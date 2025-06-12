@@ -24,5 +24,5 @@ resource "aws_instance" "ansible_instance" {
 }
 
 output "ansible_ssm_command" {
-  value = "aws ssm start-session --target ${aws_instance.ansible_instance.id}"
+  value = "aws ssm start-session --target ${aws_instance.ansible_instance.id} --region ${var.aws_region}"
 }

@@ -22,3 +22,8 @@ variable "postgres_password" {
   type      = string
   sensitive = true
 }
+
+variable "cluster_name" {
+  type    = string
+  default = "lab-cluster"
+}

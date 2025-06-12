@@ -53,7 +53,7 @@ resource "aws_instance" "nbe_instance" {
 }
 
 output "nbe_ssm_command" {
-  value = "aws ssm start-session --target ${aws_instance.nbe_instance.id}"
+  value = "aws ssm start-session --target ${aws_instance.nbe_instance.id} --region ${var.aws_region}"
 }
 
 output "nbe_console_url" {

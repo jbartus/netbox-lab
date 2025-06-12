@@ -27,7 +27,7 @@ resource "aws_instance" "nbc_instance" {
 }
 
 output "nbc_ssm_command" {
-  value = "aws ssm start-session --target ${aws_instance.nbc_instance.id}"
+  value = "aws ssm start-session --target ${aws_instance.nbc_instance.id} --region ${var.aws_region}"
 }
 
 output "nbc_url" {
