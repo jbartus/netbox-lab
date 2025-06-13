@@ -35,3 +35,7 @@ terraform.rc
 
 # always use latest provider version
 .terraform.lock.hcl
+
+# Ignore any graphing images
+*.png
+*.svg

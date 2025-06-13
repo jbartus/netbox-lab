@@ -1,6 +1,6 @@
 module "eks" {
   source       = "terraform-aws-modules/eks/aws"
-  cluster_name = "lab-cluster"
+  cluster_name = var.cluster_name
   vpc_id       = module.vpc.vpc_id
   subnet_ids   = module.vpc.private_subnets
 
@@ -30,7 +30,7 @@ module "eks" {
 resource "null_resource" "kubectl" {
   depends_on = [module.eks]
   provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name}"
+    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region}"
   }
 }
 

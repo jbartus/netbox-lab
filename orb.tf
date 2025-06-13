@@ -24,5 +24,5 @@ resource "aws_instance" "orb_instance" {
 }
 
 output "orb_ssm_command" {
-  value = "aws ssm start-session --target ${aws_instance.orb_instance.id}"
+  value = "aws ssm start-session --target ${aws_instance.orb_instance.id} --region ${var.aws_region}"
 }
