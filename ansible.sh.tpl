@@ -2,7 +2,8 @@
 
 set -xeuo pipefail
 
-dnf -y install ansible
+dnf -y install ansible python3-pip
+pip install pynetbox
 
 cd /root
 
