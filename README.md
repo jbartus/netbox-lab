@@ -6,7 +6,7 @@ this repo sets up three instances of netbox
 
 # pre-req
 ```
-which terraform aws kubectl helm
+which terraform aws session-manager-plugin kubectl helm
 ```
 
 # how to use
