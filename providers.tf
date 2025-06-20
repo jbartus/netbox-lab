@@ -27,3 +27,7 @@ data "aws_ssm_parameter" "al2023_ami_arm64" {
 data "aws_ssm_parameter" "al2023_ami_x86-64" {
   name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 }
+
+data "aws_ssm_parameter" "ubuntu_2404_ami_amd64" {
+  name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
+}
