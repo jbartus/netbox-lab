@@ -2,8 +2,8 @@
 this repo sets up four instances of netbox
 - `nbc.tf` and `nbc.sh` setup netbox community (open source) on a standalone vm
 - `nbe.tf`, `nbe.sh.tpl` and `config.yaml.tpl` setup netbox enterprise (on-prem) on a standalone vm
-- `eks.tf` and `nbc-helm.sh` setup netbox community on an EKS (kubernetes) cluster using an external RDS database from `postgres.tf`
-- `eks.tf` and `nbe-helm.sh` setup netbox enterprise on EKS
+- `eks.tf` and `nbc-helm.sh` setup netbox community on EKS (kubernetes) using an external RDS db from `postgres.tf`
+- `eks.tf`, `nbe-helm.sh` and `nbe-values.yaml` setup netbox enterprise on EKS
 
 # pre-req
 ```
