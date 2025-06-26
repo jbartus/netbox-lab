@@ -16,6 +16,7 @@ resource "aws_instance" "ansible_instance" {
   user_data = templatefile("${path.module}/ansible.sh.tpl", {
     ansible_cfg         = file("${path.module}/ansible.cfg"),
     ansible_nb_inv_yaml = file("${path.module}/ansible_nb_inv.yaml"),
+    ansible_in_yaml     = file("${path.module}/ansible-in.yaml"),
     netbox_api          = aws_instance.nbe_instance.private_ip
     admin_password      = var.nbe_admin_password
   })

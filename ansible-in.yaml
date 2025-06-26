@@ -1,0 +1,41 @@
+---
+- name: Configure NetBox tenants and sites
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  module_defaults:
+    group/netbox.netbox.netbox:
+      netbox_url:   "{{ lookup('env','NETBOX_API') }}"
+      netbox_token: "{{ lookup('env','NETBOX_TOKEN') }}"
+      validate_certs: false
+
+  collections:
+    - netbox.netbox
+
+  tasks:
+
+    - name: Create LabTeam tenant
+      netbox.netbox.netbox_tenant:
+        data:
+          name: LabTeam
+
+    - name: Create VendorA tenant
+      netbox.netbox.netbox_tenant:
+        data:
+          name: VendorA
+
+    - name: Create VendorB tenant
+      netbox.netbox.netbox_tenant:
+        data:
+          name: VendorB
+
+    - name: Create DC1 site
+      netbox.netbox.netbox_site:
+        data:
+          name: DC1
+
+    - name: Create DC2 site
+      netbox.netbox.netbox_site:
+        data:
+          name: DC2

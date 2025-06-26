@@ -15,6 +15,13 @@ cat << 'EOF' > ansible_nb_inv.yaml
 ${ansible_nb_inv_yaml}
 EOF
 
+cat << 'EOF' > ansible-in.yaml
+${ansible_in_yaml}
+EOF
+
+echo 'ansible-playbook -i localhost, ansible-in.yaml' > example-input.sh
+chmod +x example-input.sh
+
 NETBOX_API=https://${netbox_api}/
 
 echo "export NETBOX_API=$${NETBOX_API}" >> .bash_profile
