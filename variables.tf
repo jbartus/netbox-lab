@@ -1,6 +1,6 @@
 variable "aws_region" {
-  type    = string
-  default = "us-east-1"
+  type        = string
+  default     = "us-east-1"
   description = "value for the AWS region to deploy resources in, e.g. us-east-1, eu-west-2."
   validation {
     condition     = can(regex("^(us|eu|ap|sa|ca)-[a-z]+-[1-9]$", var.aws_region))
@@ -9,8 +9,8 @@ variable "aws_region" {
 }
 
 variable "nbe_token" {
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
   description = "token supplied by Netbox Labs for your NetBox Enterprise instance."
   validation {
     condition     = length(var.nbe_token) > 0
@@ -19,8 +19,8 @@ variable "nbe_token" {
 }
 
 variable "nbe_console_password" {
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
   description = "A password of at least 6 characters for the NetBox Enterprise console user."
   validation {
     condition     = length(var.nbe_console_password) >= 6
@@ -29,8 +29,8 @@ variable "nbe_console_password" {
 }
 
 variable "nbe_admin_password" {
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
   description = "A password of at least 12 characters for the NetBox Enterprise admin user."
   validation {
     condition     = length(var.nbe_admin_password) >= 12
@@ -39,8 +39,8 @@ variable "nbe_admin_password" {
 }
 
 variable "postgres_password" {
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
   description = "A password of at least 8 characters for the PostgreSQL database."
   validation {
     condition     = length(var.postgres_password) >= 8
