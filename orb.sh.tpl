@@ -4,9 +4,6 @@ set -xeuo pipefail
 
 dnf -y install docker
 systemctl enable --now docker
-curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/libexec/docker/cli-plugins/docker-compose
-chmod +x /usr/libexec/docker/cli-plugins/docker-compose
-
 docker pull netboxlabs/orb-agent:latest
 
 cd /root
