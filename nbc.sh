@@ -63,19 +63,21 @@ sed -i "s/netbox.example.com/${PUBIP}/" /etc/nginx/conf.d/netbox.conf
 systemctl restart nginx
 
 # demo data
-systemctl stop nginx
-systemctl stop netbox-rq
-systemctl stop netbox
-systemctl stop redis6
+# systemctl stop nginx
+# systemctl stop netbox-rq
+# systemctl stop netbox
+# systemctl stop redis6
 
-sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'netbox';"
-sudo -u postgres psql -c "DROP database netbox;"
-sudo -u postgres psql -c "CREATE database netbox;"
+# sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'netbox';"
+# sudo -u postgres psql -c "DROP database netbox;"
+# sudo -u postgres psql -c "CREATE database netbox;"
+# sudo -u postgres psql -c "ALTER DATABASE netbox OWNER TO netbox;"
+# sudo -u postgres psql -d netbox -c "GRANT CREATE ON SCHEMA public TO netbox;"
 
-wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.3.sql
-sudo -u postgres psql netbox < netbox-demo-v4.3.sql
+# wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.3.sql
+# sudo -u postgres psql netbox < netbox-demo-v4.3.sql
 
-systemctl start redis6
-systemctl start netbox
-systemctl start netbox-rq
-systemctl start nginx
+# systemctl start redis6
+# systemctl start netbox
+# systemctl start netbox-rq
+# systemctl start nginx
