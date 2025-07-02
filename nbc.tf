@@ -18,7 +18,7 @@ resource "aws_vpc_security_group_ingress_rule" "nbc_allow_https_in" {
 
 resource "aws_instance" "nbc_instance" {
   ami                         = data.aws_ssm_parameter.al2023_ami_arm64.value
-  instance_type               = "t4g.xlarge"
+  instance_type               = "m8g.xlarge"
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.nbc.id]
   user_data                   = file("${path.module}/nbc.sh")
