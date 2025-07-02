@@ -27,7 +27,7 @@ mkdir -p /opt/netbox/
 cd /opt/netbox/
 dnf install -y git
 git clone https://github.com/netbox-community/netbox.git .
-git checkout v4.3.1
+git checkout v4.3.3
 groupadd --system netbox
 adduser --system -g netbox netbox
 chown --recursive netbox /opt/netbox/netbox/media/
