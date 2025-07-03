@@ -36,7 +36,7 @@ chown --recursive netbox /opt/netbox/netbox/scripts/
 cd /opt/netbox/netbox/netbox/
 cp configuration_example.py configuration.py
 sed -i "s/^ALLOWED_HOSTS = \[\]/ALLOWED_HOSTS = \['\*'\]/" configuration.py
-sed -i "s/'USER': '',\s*# PostgreSQL username/'USER': 'netbox',\t      # PostgreSQL username/" configuration.py
+sed -i "s/'USER': '',\s*# PostgreSQL username/'USER': 'netbox',\t    # PostgreSQL username/" configuration.py
 sed -i "s/'PASSWORD': '',\s*# PostgreSQL password/'PASSWORD': 'box_of_nets',# PostgreSQL username/" configuration.py
 sed -i "s/^SECRET_KEY = ''/SECRET_KEY = '12345678901234567890123456789012345678901234567890'/" configuration.py
 PYTHON=/usr/bin/python3.12 /opt/netbox/upgrade.sh
@@ -63,21 +63,29 @@ sed -i "s/netbox.example.com/${PUBIP}/" /etc/nginx/conf.d/netbox.conf
 systemctl restart nginx
 
 # demo data
-# systemctl stop nginx
-# systemctl stop netbox-rq
-# systemctl stop netbox
-# systemctl stop redis6
+systemctl stop nginx
+systemctl stop netbox-rq
+systemctl stop netbox
+systemctl stop redis6
 
-# sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'netbox';"
-# sudo -u postgres psql -c "DROP database netbox;"
-# sudo -u postgres psql -c "CREATE database netbox;"
-# sudo -u postgres psql -c "ALTER DATABASE netbox OWNER TO netbox;"
-# sudo -u postgres psql -d netbox -c "GRANT CREATE ON SCHEMA public TO netbox;"
+sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'netbox';"
+sudo -u postgres psql -c "DROP database netbox;"
+sudo -u postgres psql -c "CREATE database netbox;"
+sudo -u postgres psql -c "ALTER DATABASE netbox OWNER TO netbox;"
+sudo -u postgres psql -d netbox -c "GRANT CREATE ON SCHEMA public TO netbox;"
 
-# wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.3.sql
-# sudo -u postgres psql netbox < netbox-demo-v4.3.sql
+wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.3.sql
+sudo -u postgres psql netbox < netbox-demo-v4.3.sql
 
-# systemctl start redis6
-# systemctl start netbox
-# systemctl start netbox-rq
-# systemctl start nginx
+systemctl start redis6
+systemctl start netbox
+systemctl start netbox-rq
+systemctl start nginx
+
+# plugins
+source /opt/netbox/venv/bin/activate
+pip install netbox_topology_views netboxlabs-netbox-custom-objects
+sed -i "s/PLUGINS = \[\]/PLUGINS = ['netbox_topology_views', 'netbox_custom_objects']/" /opt/netbox/netbox/netbox/configuration.py
+cd /opt/netbox/netbox/
+python3 manage.py migrate
+systemctl restart netbox netbox-rq
