@@ -47,3 +47,10 @@ variable "postgres_password" {
     error_message = "PostgreSQL password must be at least 8 characters long."
   }
 }
+
+variable "nbe_release_channel" {
+  type        = string
+  default     = "stable"
+  description = "Release channel for NetBox Enterprise."
+}
+  
