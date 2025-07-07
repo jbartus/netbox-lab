@@ -13,3 +13,9 @@ ${config_yaml}
 EOF
 
 ./netbox-enterprise install --license license.yaml --admin-console-password ${nbe_console_password} --config-values config.yaml
+
+cat << 'EOF' > nbe-co.sh
+${nbe_co_sh}
+EOF
+
+chmod +x nbe-co.sh

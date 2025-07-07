@@ -33,7 +33,7 @@ resource "aws_vpc_security_group_ingress_rule" "nbe_allow_30k_in" {
 }
 
 resource "aws_instance" "nbe_instance" {
-  ami                    = data.aws_ssm_parameter.ubuntu_2404_ami_amd64.value
+  ami                    = data.aws_ssm_parameter.al2023_ami_x86-64.value
   instance_type          = "m7i.2xlarge"
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.nbe_lab.id]
@@ -43,6 +43,7 @@ resource "aws_instance" "nbe_instance" {
     config_yaml = templatefile("${path.module}/config.yaml.tpl", {
       nbe_admin_password = var.nbe_admin_password
     })
+    nbe_co_sh = file("${path.module}/nbe-co.sh")
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
