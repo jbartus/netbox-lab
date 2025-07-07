@@ -40,6 +40,7 @@ resource "aws_instance" "nbe_instance" {
   user_data = templatefile("${path.module}/nbe.sh.tpl", {
     nbe_token            = var.nbe_token,
     nbe_console_password = var.nbe_console_password,
+    nbe_release_channel  = var.nbe_release_channel,
     config_yaml = templatefile("${path.module}/config.yaml.tpl", {
       nbe_admin_password = var.nbe_admin_password
     })
