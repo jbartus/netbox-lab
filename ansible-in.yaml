@@ -15,27 +15,70 @@
 
   tasks:
 
-    - name: Create LabTeam tenant
-      netbox.netbox.netbox_tenant:
+    - netbox.netbox.netbox_tenant:
         data:
-          name: LabTeam
+          name: Vaulter
 
-    - name: Create VendorA tenant
-      netbox.netbox.netbox_tenant:
+    - netbox.netbox.netbox_rack_role:
         data:
-          name: VendorA
+          name: networking
 
-    - name: Create VendorB tenant
-      netbox.netbox.netbox_tenant:
+    - netbox.netbox.netbox_rack_role:
         data:
-          name: VendorB
+          name: compute
 
-    - name: Create DC1 site
-      netbox.netbox.netbox_site:
+    - netbox.netbox.netbox_site:
         data:
-          name: DC1
+          name: 165Halsey
 
-    - name: Create DC2 site
-      netbox.netbox.netbox_site:
+    - netbox.netbox.netbox_rack:
         data:
-          name: DC2
+          name: rack1
+          site: 165Halsey
+          rack_role: networking
+
+    - netbox.netbox.netbox_rack:
+        data:
+          name: rack2
+          site: 165Halsey
+          rack_role: networking
+
+    - netbox.netbox.netbox_rack:
+        data:
+          name: rack3
+          site: 165Halsey
+          rack_role: compute
+
+    - netbox.netbox.netbox_rack:
+        data:
+          name: rack4
+          site: 165Halsey
+          rack_role: compute
+
+    - netbox.netbox.netbox_site:
+        data:
+          name: 375Pearl
+
+    - netbox.netbox.netbox_rack:
+        data:
+          name: rack1
+          site: 375Pearl
+          rack_role: networking
+
+    - netbox.netbox.netbox_rack:
+        data:
+          name: rack2
+          site: 375Pearl
+          rack_role: networking
+
+    - netbox.netbox.netbox_rack:
+        data:
+          name: rack3
+          site: 375Pearl
+          rack_role: compute
+
+    - netbox.netbox.netbox_rack:
+        data:
+          name: rack4
+          site: 375Pearl
+          rack_role: compute
