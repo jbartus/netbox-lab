@@ -9,4 +9,4 @@ spec:
     replicas:
       value: "1"
     netbox_configuration_py:
-      value: PLUGINS=["netbox_topology_views"]
+      value: PLUGINS=["netbox_topology_views", "netbox_floorplan", "netbox_dns"]
