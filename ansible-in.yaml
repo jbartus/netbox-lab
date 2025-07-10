@@ -29,56 +29,82 @@
 
     - netbox.netbox.netbox_site:
         data:
-          name: 165Halsey
+          name: "165 Halsey"
+
+    - netbox.netbox.netbox_location:
+        data:
+          name: MMR2
+          site: "165 Halsey"
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack1
-          site: 165Halsey
+          site: "165 Halsey"
+          location: MMR2
+          tenant: Vaulter
           rack_role: networking
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack2
-          site: 165Halsey
+          site: "165 Halsey"
+          location: MMR2
+          tenant: Vaulter
           rack_role: networking
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack3
-          site: 165Halsey
+          site: "165 Halsey"
+          location: MMR2
+          tenant: Vaulter
           rack_role: compute
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack4
-          site: 165Halsey
+          site: "165 Halsey"
+          location: MMR2
+          tenant: Vaulter
           rack_role: compute
 
     - netbox.netbox.netbox_site:
         data:
-          name: 375Pearl
+          name: "375 Pearl"
+
+    - netbox.netbox.netbox_location:
+        data:
+          name: "30th Floor"
+          site: "375 Pearl"
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack1
-          site: 375Pearl
+          site: "375 Pearl"
+          location: "30th Floor"
+          tenant: Vaulter
           rack_role: networking
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack2
-          site: 375Pearl
+          site: "375 Pearl"
+          location: "30th Floor"
+          tenant: Vaulter
           rack_role: networking
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack3
-          site: 375Pearl
+          site: "375 Pearl"
+          location: "30th Floor"
+          tenant: Vaulter
           rack_role: compute
 
     - netbox.netbox.netbox_rack:
         data:
           name: rack4
-          site: 375Pearl
+          site: "375 Pearl"
+          location: "30th Floor"
+          tenant: Vaulter
           rack_role: compute
