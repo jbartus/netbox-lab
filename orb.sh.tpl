@@ -12,10 +12,13 @@ cat << 'EOF' > orb.yaml
 ${orb_yaml}
 EOF
 
+echo "export C8KV_PASS=Hardcode12345" >> .bash_profile
+
 cat << 'EOF' > scan.sh
 docker run -u root -v /root:/opt/orb/ \
   -e DIODE_CLIENT_ID=$${DIODE_CLIENT_ID} \
   -e DIODE_CLIENT_SECRET=$${DIODE_CLIENT_SECRET} \
+  -e C8KV_PASS=$${C8KV_PASS} \
   netboxlabs/orb-agent:latest run -c /opt/orb/orb.yaml
 EOF
 
