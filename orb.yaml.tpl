@@ -10,6 +10,14 @@ orb:
         agent_name: orb1
     network_discovery:
     device_discovery:
+  secrets_manager:
+    active: vault
+    sources:
+      vault:
+        address: "http://VAULTIP:8200"
+        auth: token
+        auth_args:
+          token: "dev-only-token"
   policies:
     network_discovery:
       public_subnets:
@@ -26,4 +34,4 @@ orb:
           - driver: ios
             hostname: ${c8kv_ip}
             username: iosuser
-            password: $${C8KV_PASS}
+            password: "$${vault://secret/cisco/v8000/password}"
