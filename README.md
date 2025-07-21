@@ -34,6 +34,10 @@ terraform init
 cp terraform.tfvars.example terraform.tfvars
 ```
 - edit `terraform.tfvars` to add your nbe license id and define your region
+NOTE: make sure the region you define matches that which your cli is configured to use
+```
+aws ec2 describe-availability-zones --query "AvailabilityZones[0].RegionName"
+```
 - kick off the setup
 ```
 terraform apply
