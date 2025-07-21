@@ -6,8 +6,10 @@ this repo sets up four instances of netbox
 - `eks.tf`, `nbe-helm.sh` and `nbe-values.yaml` setup netbox enterprise on EKS
 
 # pre-req
+## mac os
 ```
-which terraform aws session-manager-plugin kubectl helm
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install terraform awscli session-manager-plugin kubernetes-cli helm
 ```
 
 # how to use
