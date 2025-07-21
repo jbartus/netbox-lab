@@ -18,11 +18,26 @@ brew install terraform awscli session-manager-plugin kubernetes-cli helm
 # how to use
 - setup your aws auth
 - clone this repo
-- `cd netbox-lab`
-- `terraform init`
-- `cp terraform.tfvars.example terraform.tfvars`
+```
+git clone https://github.com/jbartus/netbox-lab.git
+```
+- `cd` into it
+```
+cd netbox-lab
+```
+- initialize terraform (pull in providers & modules)
+```
+terraform init
+```
+- copy the example variables file to your own
+```
+cp terraform.tfvars.example terraform.tfvars
+```
 - edit `terraform.tfvars` to add your nbe license id and define your region
-- `terraform apply`
+- kick off the setup
+```
+terraform apply
+```
 - wait ~12 minutes
 - click the output links
 - accept/get-past the tls warnings
