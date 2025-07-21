@@ -7,8 +7,11 @@ this repo sets up four instances of netbox
 
 # pre-req
 ## mac os
+install homebrew (if you don't already have it)
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+```
 brew install terraform awscli session-manager-plugin kubernetes-cli helm
 ```
 
