@@ -16,7 +16,10 @@ brew install terraform awscli session-manager-plugin kubernetes-cli helm
 ```
 
 # how to use
-- setup your aws auth
+- setup your aws cli authentication, verify with:
+```
+aws sts get-caller-identity
+```
 - clone this repo
 ```
 git clone https://github.com/jbartus/netbox-lab.git
@@ -33,8 +36,7 @@ terraform init
 ```
 cp terraform.tfvars.example terraform.tfvars
 ```
-- edit `terraform.tfvars` to add your nbe license id and define your region
-NOTE: make sure the region you define matches that which your cli is configured to use
+- edit `terraform.tfvars` to add your nbe license id and define your region.  be sure the region you define matches what your cli is configured to use
 ```
 aws ec2 describe-availability-zones --query "AvailabilityZones[0].RegionName"
 ```
