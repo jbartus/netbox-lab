@@ -1,11 +1,25 @@
 # what
-this repo sets up four instances of netbox
-- `nbc.tf` and `nbc.sh` setup netbox community (open source) on a standalone vm
-- `nbe.tf`, `nbe.sh.tpl` and `config.yaml.tpl` setup netbox enterprise (on-prem) on a standalone vm
-- `eks.tf` and `nbc-helm.sh` setup netbox community on EKS (kubernetes) using an external RDS db from `postgres.tf`
-- `eks.tf`, `nbe-helm.sh` and `nbe-values.yaml` setup netbox enterprise on EKS
+this repo sets up four instances of netbox in an aws account.  
 
-# pre-req
+## on standalone VMs
+- `nbc.tf` and `nbc.sh` setup netbox community (open source)
+- `nbe.tf`, `nbe.sh.tpl` and `config.yaml.tpl` setup netbox enterprise ("on-prem")
+
+## on kubernetes (via helm charts)
+- `eks.tf` sets up a small EKS cluster running on spot instances
+- `nbc-helm.sh` sets up netbox community using an external RDS db from `postgres.tf`
+- `nbe-helm.sh` and `nbe-values.yaml` setup netbox enterprise on EKS
+
+## other bits
+- `c8kv.tf` sets up a [Cisco 8000V](https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8000v-edge-software/catalyst-8000v-edge-software-ds.html) ec2 instance running ios xe.  it doesn't do anything but exist to be a target of scanning/discovery/configuration-automation.
+- `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent (pointed at NBE & the above "router"), including a vault instance for a test/dummy "secret"
+- `ansible.tf` and `ansible.sh.tpl` setup a vm for running ansible playbooks/runbooks.  `ansible-in.yaml` populates a netbox instance with some dummy/demo data
+
+## plumbing
+- `vpc.tf` creates the base vpc that all of this lives in
+- `ssm.tf` enables the use of ssm-session-manager, which in turn both obviates the need for ssh key management and enables the use of aws console in a browser tab during screenshares
+
+# prerequisites
 ## mac os
 install homebrew (if you don't already have it)
 ```
@@ -16,7 +30,7 @@ brew install terraform awscli session-manager-plugin kubernetes-cli helm
 ```
 
 # how to use
-- setup your aws cli authentication, verify with:
+- setup your aws cli authentication. verify with:
 ```
 aws sts get-caller-identity
 ```
@@ -48,3 +62,8 @@ terraform apply
 - click the output links
 - accept/get-past the tls warnings
 - login with admin/admin or the passwords you defined
+
+# tips
+for most of the `foo.tf` files resources data and outputs are kept together so that if you're not interested in `foo` right now you can just bulk-comment-out the file
+
+`eks.tf` and `postgres.tf` are by far the slowest parts, so if you're not doing anything helm/kubernetes related commenting them out saves about half the apply/destroy time
