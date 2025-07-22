@@ -1,5 +1,5 @@
-# what
-this repo sets up four instances of netbox in an aws account for testing and demonstrating functionality
+# what is this
+this repo is a mix of mostly terraform-hcl and shell code that sets up four instances of netbox in an aws account, for testing and demonstrating functionality
 
 ## on standalone VMs
 - `nbc.tf` and `nbc.sh` setup netbox community (open source)
@@ -77,6 +77,6 @@ terraform destroy
 ```
 
 # tips
-for most of the `foo.tf` files resources data and outputs are kept together so that if you're not interested in `foo` right now you can just bulk-comment-out the file
+for most of the `foo.tf` files the related `resource` `data` and `output` are kept together so that if you're not interested in `foo` right now you can just bulk-comment-out the whole file
 
 `eks.tf` and `postgres.tf` are by far the slowest parts, so if you're not doing anything helm/kubernetes related commenting them out saves about half the apply/destroy time
