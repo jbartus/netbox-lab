@@ -1,5 +1,9 @@
 # what
-this repo sets up four instances of netbox in an aws account.  
+this repo sets up four instances of netbox in an aws account for testing and demonstrating functionality
+
+NOTE: this is all written/designed with the expectation that the environment be SHORT LIVED.  
+measured in hours, rarely 24, and never lasting a weekend.
+nothing in here is to be taken as best practice or production level config.
 
 ## on standalone VMs
 - `nbc.tf` and `nbc.sh` setup netbox community (open source)
@@ -62,6 +66,11 @@ terraform apply
 - click the output links
 - accept/get-past the tls warnings
 - login with admin/admin or the passwords you defined
+- test or demonstrate your thing
+- cleanup (very important step!)
+```
+terraform destroy
+```
 
 # tips
 for most of the `foo.tf` files resources data and outputs are kept together so that if you're not interested in `foo` right now you can just bulk-comment-out the file
