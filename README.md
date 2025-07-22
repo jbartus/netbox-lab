@@ -1,10 +1,6 @@
 # what
 this repo sets up four instances of netbox in an aws account for testing and demonstrating functionality
 
-NOTE: this is all written/designed with the expectation that the environment be SHORT LIVED.  
-measured in hours, rarely 24, and never lasting a weekend.
-nothing in here is to be taken as best practice or production level config.
-
 ## on standalone VMs
 - `nbc.tf` and `nbc.sh` setup netbox community (open source)
 - `nbe.tf`, `nbe.sh.tpl` and `config.yaml.tpl` setup netbox enterprise ("on-prem")
@@ -22,6 +18,10 @@ nothing in here is to be taken as best practice or production level config.
 ## plumbing
 - `vpc.tf` creates the base vpc that all of this lives in
 - `ssm.tf` enables the use of ssm-session-manager, which in turn both obviates the need for ssh key management and enables the use of aws console in a browser tab during screenshares
+
+NOTE: this is all written/designed with the expectation that the environment be SHORT LIVED.  
+measured in hours, rarely 24, and never lasting a weekend.
+nothing in here is to be taken as best practice or production level config.
 
 # prerequisites
 ## mac os
@@ -58,7 +58,11 @@ cp terraform.tfvars.example terraform.tfvars
 ```
 aws ec2 describe-availability-zones --query "AvailabilityZones[0].RegionName"
 ```
-- kick off the setup
+- run a `plan` to be check for errors
+```
+terraform plan
+```
+- kick off the setup (the main event)
 ```
 terraform apply
 ```
