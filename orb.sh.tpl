@@ -33,3 +33,5 @@ sudo yum -y install vault
 
 vault login dev-only-token
 vault kv put secret/cisco/v8000 password=Hardcode12345
+
+dnf -y install net-snmp-libs

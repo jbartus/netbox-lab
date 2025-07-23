@@ -10,6 +10,7 @@ orb:
         agent_name: orb1
     network_discovery:
     device_discovery:
+    snmp_discovery:
   secrets_manager:
     active: vault
     sources:
@@ -20,7 +21,7 @@ orb:
           token: "dev-only-token"
   policies:
     network_discovery:
-      public_subnets:
+      network_policy:
         config:
         scope:
           targets: 
@@ -28,10 +29,19 @@ orb:
           fast_mode: True
           timing: 5
     device_discovery:
-      c8kv_instances:
+      device_policy:
         config:
         scope:
           - driver: ios
             hostname: ${c8kv_ip}
             username: iosuser
             password: "$${vault://secret/cisco/v8000/password}"
+    snmp_discovery:
+      snmp_policy:
+        config:
+        scope:
+          targets:
+            - host: "${c8kv_ip}"
+          authentication:
+            protocol_version: "SNMPv2c"
+            community: "public"

@@ -16,6 +16,14 @@ resource "aws_vpc_security_group_ingress_rule" "c8kv_allow_ssh_in" {
   ip_protocol       = "tcp"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "c8kv_allow_snmp_in" {
+  security_group_id = aws_security_group.c8kv.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 161
+  to_port           = 161
+  ip_protocol       = "udp"
+}
+
 data "aws_ami" "c8kv_byol" {
   owners = ["aws-marketplace"]
   filter {
@@ -39,5 +47,5 @@ resource "aws_instance" "c8kv_instance" {
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.c8kv.id]
   associate_public_ip_address = true
-  user_data                   = "Section: IOS configuration\nusername iosuser privilege 15 secret Hardcode12345"
+  user_data                   = "Section: IOS configuration\nusername iosuser privilege 15 secret Hardcode12345\nsnmp-server community public ro"
 }
