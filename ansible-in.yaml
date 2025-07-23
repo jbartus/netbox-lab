@@ -30,6 +30,11 @@
     - netbox.netbox.netbox_site:
         data:
           name: "165 Halsey"
+          description: "https://www.165halsey.com"
+          time_zone: "America/New_York"
+          physical_address: "165 Halsey Street, Newark, NJ 07102"
+          latitude: "40.736906"
+          longitude: "-74.173213"
 
     - netbox.netbox.netbox_location:
         data:
@@ -43,6 +48,9 @@
           location: MMR2
           tenant: Vaulter
           rack_role: networking
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
 
     - netbox.netbox.netbox_rack:
         data:
@@ -51,6 +59,9 @@
           location: MMR2
           tenant: Vaulter
           rack_role: networking
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
 
     - netbox.netbox.netbox_rack:
         data:
@@ -59,6 +70,9 @@
           location: MMR2
           tenant: Vaulter
           rack_role: compute
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
 
     - netbox.netbox.netbox_rack:
         data:
@@ -67,6 +81,9 @@
           location: MMR2
           tenant: Vaulter
           rack_role: compute
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
 
     - netbox.netbox.netbox_site:
         data:
@@ -84,6 +101,9 @@
           location: "30th Floor"
           tenant: Vaulter
           rack_role: networking
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
 
     - netbox.netbox.netbox_rack:
         data:
@@ -92,6 +112,9 @@
           location: "30th Floor"
           tenant: Vaulter
           rack_role: networking
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
 
     - netbox.netbox.netbox_rack:
         data:
@@ -100,6 +123,9 @@
           location: "30th Floor"
           tenant: Vaulter
           rack_role: compute
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
 
     - netbox.netbox.netbox_rack:
         data:
@@ -108,3 +134,6 @@
           location: "30th Floor"
           tenant: Vaulter
           rack_role: compute
+          outer_width: 24
+          outer_depth: 40
+          outer_unit: "Inches"
