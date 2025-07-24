@@ -14,11 +14,9 @@ resource "aws_instance" "ansible_instance" {
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.ansible.id]
   user_data = templatefile("${path.module}/ansible.sh.tpl", {
-    ansible_cfg         = file("${path.module}/ansible.cfg"),
-    ansible_nb_inv_yaml = file("${path.module}/ansible_nb_inv.yaml"),
-    ansible_in_yaml     = file("${path.module}/ansible-in.yaml"),
-    netbox_api          = aws_instance.nbe_instance.private_ip
-    admin_password      = var.nbe_admin_password
+    ansible_in_yaml = file("${path.module}/ansible-in.yaml"),
+    netbox_api      = aws_instance.nbe_instance.private_ip
+    admin_password  = var.nbe_admin_password
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name

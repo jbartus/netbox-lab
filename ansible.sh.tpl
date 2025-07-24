@@ -3,16 +3,32 @@
 set -xeuo pipefail
 
 dnf -y install ansible python3-pip
-pip install pynetbox
+pip install pynetbox ansible-rulebook ansible-pylibssh
 
 cd /root
 
 cat << 'EOF' > ansible.cfg
-${ansible_cfg}
+[defaults]
+inventory = ./ansible_nb_inv.yaml
+host_key_checking = False
 EOF
 
 cat << 'EOF' > ansible_nb_inv.yaml
-${ansible_nb_inv_yaml}
+plugin: netbox.netbox.nb_inventory
+validate_certs: False
+device_query_filters:
+  - manufacturer: cisco
+  - platform: ios
+EOF
+
+mkdir group_vars
+cat << 'EOF' > group_vars/all.yaml
+---
+ansible_user: iosuser
+ansible_password: Hardcode12345
+ansible_become: yes
+ansible_become_method: enable
+ansible_network_os: cisco.ios.ios
 EOF
 
 cat << 'EOF' > ansible-in.yaml
