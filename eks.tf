@@ -19,7 +19,7 @@ module "eks" {
       min_size      = 2
       max_size      = 6
       desired_size  = 3
-      instance_type = ["c8g.xlarge"]
+      instance_type = "c8g.xlarge"
       capacity_type = "SPOT"
       iam_role_additional_policies = {
         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
