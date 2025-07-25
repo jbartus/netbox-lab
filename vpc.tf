@@ -1,6 +1,5 @@
 module "vpc" {
   source             = "terraform-aws-modules/vpc/aws"
-  version            = "5.21.0"
   name               = "terraform-vpc"
   cidr               = "10.0.0.0/16"
   azs                = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
