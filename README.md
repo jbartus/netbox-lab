@@ -58,7 +58,7 @@ cp terraform.tfvars.example terraform.tfvars
 ```
 aws ec2 describe-availability-zones --query "AvailabilityZones[0].RegionName"
 ```
-- run a `plan` to be check for errors
+- run a `plan` to check for errors
 ```
 terraform plan
 ```
