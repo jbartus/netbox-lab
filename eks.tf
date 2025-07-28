@@ -12,15 +12,20 @@ module "eks" {
     aws-ebs-csi-driver = {
       most_recent = true
     }
+    coredns    = {}
+    kube-proxy = {}
+    vpc-cni = {
+      before_compute = true
+    }
   }
 
   eks_managed_node_groups = {
     spot = {
-      min_size      = 2
-      max_size      = 6
-      desired_size  = 3
-      instance_type = "c8g.xlarge"
-      capacity_type = "SPOT"
+      min_size       = 3
+      max_size       = 6
+      desired_size   = 3
+      instance_types = ["m7i.large", "m7i-flex.large", "m7a.large"]
+      capacity_type  = "SPOT"
       iam_role_additional_policies = {
         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       }
