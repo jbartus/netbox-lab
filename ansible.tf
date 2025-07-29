@@ -20,6 +20,10 @@ resource "aws_instance" "ansible_instance" {
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+
+  tags = {
+    Name = "ansible"
+  }
 }
 
 output "ansible_ssm_command" {

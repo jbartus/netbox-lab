@@ -24,6 +24,10 @@ resource "aws_instance" "nbc_instance" {
   user_data                   = file("${path.module}/nbc.sh")
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+
+  tags = {
+    Name = "community"
+  }
 }
 
 output "nbc_ssm_command" {

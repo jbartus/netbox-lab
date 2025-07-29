@@ -52,6 +52,10 @@ resource "aws_instance" "nbe_instance" {
   root_block_device {
     volume_size = 100
   }
+
+  tags = {
+    Name = "enterprise"
+  }
 }
 
 output "nbe_ssm_command" {

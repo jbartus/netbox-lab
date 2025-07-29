@@ -22,6 +22,10 @@ resource "aws_instance" "orb_instance" {
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+
+  tags = {
+    Name = "orb"
+  }
 }
 
 output "orb_ssm_command" {
