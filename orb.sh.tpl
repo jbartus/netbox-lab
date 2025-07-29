@@ -18,8 +18,8 @@ sed -i "s/VAULTIP/$${LOCAL_IP}/" orb.yaml
 
 cat << 'EOF' > scan.sh
 docker run -u root -v /root:/opt/orb/ \
-  -e DIODE_CLIENT_ID=$${DIODE_CLIENT_ID} \
-  -e DIODE_CLIENT_SECRET=$${DIODE_CLIENT_SECRET} \
+  -e DIODE_CLIENT_ID \
+  -e DIODE_CLIENT_SECRET \
   netboxlabs/orb-agent:latest run -c /opt/orb/orb.yaml
 EOF
 
