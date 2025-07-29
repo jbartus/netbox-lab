@@ -17,7 +17,7 @@ LOCAL_IP="$(curl -H "X-aws-ec2-metadata-token: $${TOKEN}" 'http://169.254.169.25
 sed -i "s/VAULTIP/$${LOCAL_IP}/" orb.yaml
 
 cat << 'EOF' > scan.sh
-docker run -u root -v /root:/opt/orb/ \
+docker run --net host -v $${PWD}:/opt/orb/ \
   -e DIODE_CLIENT_ID \
   -e DIODE_CLIENT_SECRET \
   netboxlabs/orb-agent:latest run -c /opt/orb/orb.yaml
