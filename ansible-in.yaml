@@ -137,3 +137,35 @@
           outer_width: 24
           outer_depth: 40
           outer_unit: "Inches"
+
+    - netbox.netbox.netbox_config_context:
+        data:
+          name: ewr-ntp
+          data:
+            ntp_servers:
+              - "0.pool.ntp.org"
+              - "1.pool.ntp.org"
+          weight: 1000
+          sites:
+            - "165 Halsey"
+
+    - netbox.netbox.netbox_config_context:
+        data:
+          name: jfk-ntp
+          data:
+            ntp_servers:
+              - "2.pool.ntp.org"
+              - "3.pool.ntp.org"
+          weight: 1000
+          sites:
+            - "375 Pearl"
+
+    - netbox.netbox.netbox_config_template:
+        data:
+          name: "ios-ntp-config"
+          template_code: |
+            {% raw %}
+            {% for ntp in ntp_servers %}
+            ntp server {{ ntp }}
+            {% endfor %}
+            {% endraw %}
