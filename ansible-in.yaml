@@ -169,3 +169,15 @@
             ntp server {{ ntp }}
             {% endfor %}
             {% endraw %}
+
+    - netbox.netbox.netbox_manufacturer:
+        data:
+          name: Cisco
+
+    - netbox.netbox.netbox_device_type:
+        data:
+          model: C8000V
+          manufacturer: Cisco
+          slug: c8000v
+          u_height: 1
+          is_full_depth: false
