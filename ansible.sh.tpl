@@ -4,6 +4,7 @@ set -xeuo pipefail
 
 dnf -y install ansible python3-pip
 pip install pynetbox ansible-rulebook ansible-pylibssh
+ansible-galaxy collection install netbox.netbox --upgrade
 
 cd /root
 
