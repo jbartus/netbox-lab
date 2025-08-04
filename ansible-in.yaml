@@ -3,15 +3,20 @@
   hosts: localhost
   connection: local
   gather_facts: false
-
-  module_defaults:
-    group/netbox.netbox.netbox:
-      netbox_url:   "{{ lookup('env','NETBOX_API') }}"
-      netbox_token: "{{ lookup('env','NETBOX_TOKEN') }}"
-      validate_certs: false
+  vars:
+    netbox_api: "{{ lookup('env','NETBOX_API') }}"
+    netbox_token: "{{ lookup('env','NETBOX_TOKEN') }}"
 
   collections:
     - netbox.netbox
+
+  module_defaults:
+    group/netbox.netbox.netbox:
+      netbox_url:   "{{ netbox_api }}"
+      netbox_token: "{{ netbox_token }}"
+      validate_certs: false
+    uri:
+      validate_certs: false
 
   tasks:
 
@@ -181,3 +186,37 @@
           slug: c8000v
           u_height: 1
           is_full_depth: false
+
+    - netbox.netbox.netbox_manufacturer:
+        data:
+          name: APC
+      register: apc_manufacturer
+
+    - name: Check if Rack Type AR3350B2 exists
+      uri:
+        url: "{{ netbox_api }}api/dcim/rack-types/?slug=ar3350b2"
+        method: GET
+        headers:
+          Authorization: "Token {{ netbox_token }}"
+      register: rack_type_check
+
+    - name: Create Rack Type AR3350B2
+      uri:
+        url: "{{ netbox_api }}api/dcim/rack-types/"
+        method: POST
+        headers:
+          Authorization: "Token {{ netbox_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          manufacturer: "{{ apc_manufacturer.manufacturer.id }}"
+          model: "AR3350B2"
+          slug: "ar3350b2"
+          description: "APC NetShelter SX Server Rack Gen 2"
+          comments: "https://www.apc.com/us/en/product/AR3350B2/apc-netshelter-sx-server-rack-gen-2-42u-1991h-x-750w-x-1200d-mm-with-sides-black-taa/"
+          form_factor: "4-post-cabinet"
+          outer_unit: "mm"
+          outer_width: "750"
+          outer_depth: "1200"
+        status_code: 201
+      when: rack_type_check.json.count == 0
