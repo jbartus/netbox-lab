@@ -10,7 +10,7 @@ resource "aws_vpc_security_group_egress_rule" "c8kv_allow_all_out" {
 
 resource "aws_vpc_security_group_ingress_rule" "c8kv_allow_ssh_in" {
   security_group_id = aws_security_group.c8kv.id
-  cidr_ipv4         = "0.0.0.0/0"
+  cidr_ipv4         = module.vpc.vpc_cidr_block
   from_port         = 22
   to_port           = 22
   ip_protocol       = "tcp"
@@ -18,7 +18,7 @@ resource "aws_vpc_security_group_ingress_rule" "c8kv_allow_ssh_in" {
 
 resource "aws_vpc_security_group_ingress_rule" "c8kv_allow_snmp_in" {
   security_group_id = aws_security_group.c8kv.id
-  cidr_ipv4         = "0.0.0.0/0"
+  cidr_ipv4         = module.vpc.vpc_cidr_block
   from_port         = 161
   to_port           = 161
   ip_protocol       = "udp"
