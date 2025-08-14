@@ -32,6 +32,20 @@ install homebrew (if you don't already have it)
 ```
 brew install terraform awscli session-manager-plugin kubernetes-cli helm
 ```
+## ubuntu/wsl
+### terraform
+https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
+### aws-cli
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+### session manager plugin
+https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-debian-and-ubuntu.html
+### kubectl
+```
+sudo apt install -y kubectl
+```
+### helm
+https://helm.sh/docs/intro/install/#from-apt-debianubuntu
+
 
 # how to use
 - setup your aws cli authentication. verify with:
