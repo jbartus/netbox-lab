@@ -9,11 +9,10 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 
   addons = {
-    aws-ebs-csi-driver = {
-      most_recent = true
-    }
-    coredns    = {}
-    kube-proxy = {}
+    aws-ebs-csi-driver     = {}
+    coredns                = {}
+    eks-pod-identity-agent = {}
+    kube-proxy             = {}
     vpc-cni = {
       before_compute = true
     }
@@ -26,9 +25,20 @@ module "eks" {
       desired_size   = 3
       instance_types = ["m7i.large", "m7i-flex.large", "m7a.large"]
       capacity_type  = "SPOT"
-      iam_role_additional_policies = {
-        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      }
+    }
+  }
+}
+
+module "ebs_csi_pod_identity" {
+  source                    = "terraform-aws-modules/eks-pod-identity/aws"
+  name                      = "ebs-csi"
+  attach_aws_ebs_csi_policy = true
+
+  associations = {
+    ebs-csi = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = "kube-system"
+      service_account = "ebs-csi-controller-sa"
     }
   }
 }
