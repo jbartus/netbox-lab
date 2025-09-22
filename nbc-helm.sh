@@ -11,5 +11,7 @@ helm install netbox oci://ghcr.io/netbox-community/netbox-chart/netbox \
   --set valkey.replica.persistence.enabled=false \
   --set superuser.password=admin
 
+kubectl -n netbox wait --for=condition=Ready pod -l app.kubernetes.io/name=netbox,app.kubernetes.io/component=netbox --timeout=10m
+
 echo # newline
 echo "kubectl -n netbox port-forward svc/netbox 8080:80"
