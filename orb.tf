@@ -18,6 +18,7 @@ resource "aws_instance" "orb_instance" {
       diode_server  = aws_instance.nbe_instance.private_ip,
       public_subnet = module.vpc.public_subnet_objects[0].cidr_block
       c8kv_ip       = aws_instance.c8kv_instance.private_ip
+      ubuntu_ip     = aws_instance.ubuntu_instance.private_ip
     })
   })
   associate_public_ip_address = true

@@ -42,6 +42,7 @@ orb:
         scope:
           targets:
             - host: "${c8kv_ip}"
+            - host: "${ubuntu_ip}"
           authentication:
             protocol_version: "SNMPv2c"
             community: "public"
