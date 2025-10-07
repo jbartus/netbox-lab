@@ -30,3 +30,7 @@ data "aws_ssm_parameter" "al2023_ami_x86-64" {
 data "aws_ssm_parameter" "ubuntu_2404_ami_amd64" {
   name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
 }
+
+data "aws_ssm_parameter" "windows_server_2022_ami_x86_64" {
+  name = "/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base"
+}

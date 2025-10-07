@@ -14,6 +14,7 @@ this repo is a mix of mostly terraform-hcl and shell code that sets up four inst
 - `c8kv.tf` sets up a [Cisco 8000V](https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8000v-edge-software/catalyst-8000v-edge-software-ds.html) ec2 instance running ios xe.  it doesn't do anything but exist to be a target of scanning/discovery/configuration-automation.
 - `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent (pointed at NBE & the above "router"), including a vault instance for a test/dummy "secret"
 - `ansible.tf` and `ansible.sh.tpl` setup a vm for running ansible playbooks/runbooks.  `ansible-in.yaml` populates a netbox instance with some dummy/demo data
+- `ad-ldap.tf` and `ad-ldap.ps1` setup a windows domain controller to act as an LDAP authentication source, which works with the example config in `ad-ldap-config.txt` placed in the Advanced Settings section of the NBE console
 
 ## plumbing
 - `vpc.tf` creates the base vpc that all of this lives in
