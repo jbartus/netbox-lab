@@ -22,12 +22,15 @@ DIODE_CLIENT_SECRET=
 EOF
 
 cat << 'EOF' > scan.sh
+# cleanup any previous runs
 docker stop orb 2>/dev/null || true
 docker rm orb 2>/dev/null || true
 
+# run the scan
 docker run --env-file .env --net host -d --name orb -v $${PWD}:/opt/orb/ \
   netboxlabs/orb-agent:latest run --config /opt/orb/orb.yaml
 
+# follow the logs
 docker logs orb -f
 EOF
 
