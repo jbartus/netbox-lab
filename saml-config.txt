@@ -1,0 +1,44 @@
+# NetBox Python Configuration Overrides
+REMOTE_AUTH_AUTO_CREATE_USER = True
+REMOTE_AUTH_BACKEND = "social_core.backends.saml.SAMLAuth"
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+
+SOCIAL_AUTH_SAML_SP_ENTITY_ID = "<nbe web url>"
+SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = """
+<cert content>
+"""
+SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = """
+<key content>
+"""
+
+SOCIAL_AUTH_SAML_ORG_INFO = {
+    "en-US": {
+        "name": "foo",
+        "displayname": "bar",
+        "url": "zombo.com",
+    }
+}
+
+SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+    "givenName": "support",
+    "emailAddress": "[tech support](mailto:techsupport@example.org)"
+}
+
+SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+    "givenName": "support",
+    "emailAddress": "[saml support](mailto:samlsupport@example.org)"
+}
+
+# IdP (Keycloak)
+SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+    "keycloak": {
+        "entity_id": "<value from first line of xml>",
+        "url": "<value from several of the last lines of xml>",
+        "x509cert": """<value from xml>""",
+        "attr_user_permanent_id": "email",
+        "attr_first_name": "first_name",
+        "attr_last_name": "last_name",
+        "attr_username": "email",
+        "attr_email": "email",
+    }
+}
