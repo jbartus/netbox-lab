@@ -1,6 +1,6 @@
 resource "aws_db_subnet_group" "postgres" {
-  name       = "postgres-subnet-group"
-  subnet_ids = module.vpc.private_subnets
+  name_prefix = "postgres-subnet-group"
+  subnet_ids  = module.vpc.private_subnets
 }
 
 resource "aws_security_group" "postgres" {
@@ -22,7 +22,6 @@ resource "aws_vpc_security_group_ingress_rule" "postgres_allow_psql_in" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier             = "nb-pg-db"
   engine                 = "postgres"
   instance_class         = "db.t3.medium"
   username               = "netbox"
