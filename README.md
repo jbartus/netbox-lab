@@ -15,6 +15,7 @@ this repo is a mix of mostly terraform-hcl and shell code that sets up four inst
 - `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent (pointed at NBE & the above "router"), including a vault instance for a test/dummy "secret"
 - `ansible.tf` and `ansible.sh.tpl` setup a vm for running ansible playbooks/runbooks.  `ansible-in.yaml` populates a netbox instance with some dummy/demo data
 - `ad-ldap.tf` and `ad-ldap.ps1` setup a windows domain controller to act as an LDAP authentication source, which works with the example config in `ad-ldap-config.txt` placed in the Advanced Settings section of the NBE console
+- `keycloak.tf` and `keyloak.sh` setup a keycloak server for SAML authentication, with a base/starter (that requires filling out a few things) in `saml-config.txt`  (note: you will also have to edit the redirect url in keycloak)
 
 ## plumbing
 - `vpc.tf` creates the base vpc that all of this lives in

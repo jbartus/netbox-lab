@@ -19,3 +19,6 @@ ${nbe_co_sh}
 EOF
 
 chmod +x nbe-co.sh
+
+mkdir saml
+openssl req -x509 -newkey rsa -keyout saml/key.pem -out saml/cert.pem -nodes -subj /CN=example.org
