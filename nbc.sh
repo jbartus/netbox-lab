@@ -89,3 +89,7 @@ sed -i "s/PLUGINS = \[\]/PLUGINS = ['netbox_topology_views', 'netbox_custom_obje
 cd /opt/netbox/netbox/
 python3 manage.py migrate
 systemctl restart netbox netbox-rq
+
+# copilot
+sed -i '/<\/html>/i {% if request.user.is_authenticated %}<script src="https://static.copilot.netboxlabs.ai/load.js" defer></script>{% endif %}' /opt/netbox/netbox/templates/base/base.html
+systemctl restart netbox
