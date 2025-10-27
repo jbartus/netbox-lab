@@ -10,6 +10,7 @@ spec:
       value: "1"
     netbox_configuration_py:
       value: |
+        AUTH_PASSWORD_VALIDATORS = []
         PLUGINS=[
           "netbox_topology_views",
           "netbox_floorplan",
