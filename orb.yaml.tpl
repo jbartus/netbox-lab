@@ -36,12 +36,12 @@ orb:
             hostname: ${c8kv_ip}
             username: iosuser
             password: "$${vault://secret/cisco/v8000/password}"
-    snmp_discovery:
-      snmp_policy:
-        config:
-        scope:
-          targets:
-            - host: "${c8kv_ip}"
-          authentication:
-            protocol_version: "SNMPv2c"
-            community: "public"
+#    snmp_discovery:
+#      snmp_policy:
+#        config:
+#        scope:
+#          targets:
+#            - host: "${c8kv_ip}"
+#          authentication:
+#            protocol_version: "SNMPv2c"
+#            community: "public"
