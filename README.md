@@ -94,5 +94,3 @@ terraform destroy
 
 # tips
 for most of the `foo.tf` files the related `resource` `data` and `output` are kept together so that if you're not interested in `foo` right now you can just bulk-comment-out the whole file
-
-`eks.tf` and `postgres.tf` are by far the slowest parts, so if you're not doing anything helm/kubernetes related commenting them out saves about half the apply/destroy time

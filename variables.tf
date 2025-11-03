@@ -53,4 +53,13 @@ variable "nbe_release_channel" {
   default     = "stable"
   description = "Release channel for NetBox Enterprise."
 }
-  
+
+variable "enable_eks" {
+  type    = bool
+  default = false
+}
+
+variable "enable_postgres" {
+  type    = bool
+  default = false
+}
