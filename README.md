@@ -70,7 +70,8 @@ terraform init
 ```
 cp terraform.tfvars.example terraform.tfvars
 ```
-- edit `terraform.tfvars` to add your nbe license id and define your region.  be sure the region you define matches what your cli is configured to use
+- edit `terraform.tfvars` to set your aws region and enable the components you're looking to test or demo.  for netbox enteprise add your license id.
+- check to be sure the region you just defined matches what your cli is configured to use
 ```
 aws ec2 describe-availability-zones --query "AvailabilityZones[0].RegionName"
 ```
@@ -91,6 +92,3 @@ terraform apply
 ```
 terraform destroy
 ```
-
-# tips
-for most of the `foo.tf` files the related `resource` `data` and `output` are kept together so that if you're not interested in `foo` right now you can just bulk-comment-out the whole file

@@ -8,6 +8,21 @@ variable "aws_region" {
   }
 }
 
+variable "enable_community" {
+  type    = bool
+  default = false
+}
+
+variable "enable_ansible" {
+  type    = bool
+  default = false
+}
+
+variable "enable_enterprise" {
+  type    = bool
+  default = false
+}
+
 variable "nbe_token" {
   type        = string
   sensitive   = true
@@ -38,20 +53,25 @@ variable "nbe_admin_password" {
   }
 }
 
-variable "postgres_password" {
-  type        = string
-  sensitive   = true
-  description = "A password of at least 8 characters for the PostgreSQL database."
-  validation {
-    condition     = length(var.postgres_password) >= 8
-    error_message = "PostgreSQL password must be at least 8 characters long."
-  }
-}
-
 variable "nbe_release_channel" {
   type        = string
   default     = "stable"
   description = "Release channel for NetBox Enterprise."
+}
+
+variable "enable_discovery" {
+  type    = bool
+  default = false
+}
+
+variable "enable_ldap" {
+  type    = bool
+  default = false
+}
+
+variable "enable_saml" {
+  type    = bool
+  default = false
 }
 
 variable "enable_eks" {
@@ -62,4 +82,14 @@ variable "enable_eks" {
 variable "enable_postgres" {
   type    = bool
   default = false
+}
+
+variable "postgres_password" {
+  type        = string
+  sensitive   = true
+  description = "A password of at least 8 characters for the PostgreSQL database."
+  validation {
+    condition     = length(var.postgres_password) >= 8
+    error_message = "PostgreSQL password must be at least 8 characters long."
+  }
 }
