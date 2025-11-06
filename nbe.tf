@@ -1,15 +1,18 @@
 resource "aws_security_group" "nbe_lab" {
+  count  = var.enable_enterprise ? 1 : 0
   vpc_id = module.vpc.vpc_id
 }
 
 resource "aws_vpc_security_group_egress_rule" "nbe_allow_all_out" {
-  security_group_id = aws_security_group.nbe_lab.id
+  count             = var.enable_enterprise ? 1 : 0
+  security_group_id = aws_security_group.nbe_lab[0].id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "nbe_allow_https_in" {
-  security_group_id = aws_security_group.nbe_lab.id
+  count             = var.enable_enterprise ? 1 : 0
+  security_group_id = aws_security_group.nbe_lab[0].id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 443
   to_port           = 443
@@ -17,7 +20,8 @@ resource "aws_vpc_security_group_ingress_rule" "nbe_allow_https_in" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "nbe_allow_grpc_in" {
-  security_group_id = aws_security_group.nbe_lab.id
+  count             = var.enable_enterprise ? 1 : 0
+  security_group_id = aws_security_group.nbe_lab[0].id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 80
   to_port           = 80
@@ -25,7 +29,8 @@ resource "aws_vpc_security_group_ingress_rule" "nbe_allow_grpc_in" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "nbe_allow_30k_in" {
-  security_group_id = aws_security_group.nbe_lab.id
+  count             = var.enable_enterprise ? 1 : 0
+  security_group_id = aws_security_group.nbe_lab[0].id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 30000
   to_port           = 30000
@@ -33,10 +38,11 @@ resource "aws_vpc_security_group_ingress_rule" "nbe_allow_30k_in" {
 }
 
 resource "aws_instance" "nbe_instance" {
+  count                  = var.enable_enterprise ? 1 : 0
   ami                    = data.aws_ssm_parameter.al2023_ami_x86-64.value
   instance_type          = "m7i.2xlarge"
   subnet_id              = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [aws_security_group.nbe_lab.id]
+  vpc_security_group_ids = [aws_security_group.nbe_lab[0].id]
   user_data = templatefile("${path.module}/nbe.sh.tpl", {
     nbe_token            = var.nbe_token,
     nbe_console_password = var.nbe_console_password,
@@ -59,13 +65,13 @@ resource "aws_instance" "nbe_instance" {
 }
 
 output "nbe_ssm_command" {
-  value = "aws ssm start-session --target ${aws_instance.nbe_instance.id}"
+  value = var.enable_enterprise ? "aws ssm start-session --target ${aws_instance.nbe_instance[0].id}" : null
 }
 
 output "nbe_console_url" {
-  value = "https://${aws_instance.nbe_instance.public_ip}:30000"
+  value = var.enable_enterprise ? "https://${aws_instance.nbe_instance[0].public_ip}:30000" : null
 }
 
 output "nbe_webui_url" {
-  value = "https://${aws_instance.nbe_instance.public_ip}"
+  value = var.enable_enterprise ? "https://${aws_instance.nbe_instance[0].public_ip}" : null
 }

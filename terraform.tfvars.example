@@ -1,5 +1,13 @@
 aws_region           = "us-east-1"
+enable_community     = true
+enable_ansible       = false
+enable_enterprise    = false
 nbe_token            = "your-nbe-token"
 nbe_console_password = "6chars"
 nbe_admin_password   = "12characters"
+enable_discovery     = false
+enable_ldap          = false
+enable_saml          = false
+enable_eks           = false
+enable_postgres      = false
 postgres_password    = "yesql123"
