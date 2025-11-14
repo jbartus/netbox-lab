@@ -29,8 +29,8 @@ resource "aws_vpc_security_group_ingress_rule" "c8kv_allow_snmp_in" {
 }
 
 data "aws_ami" "c8kv_byol" {
-  count   = var.enable_discovery ? 1 : 0
-  owners  = ["aws-marketplace"]
+  count  = var.enable_discovery ? 1 : 0
+  owners = ["aws-marketplace"]
   filter {
     name   = "name"
     values = ["Cisco-C8K-*"]
