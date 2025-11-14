@@ -16,4 +16,18 @@ resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
 
 resource "aws_iam_instance_profile" "ssm_instance_profile" {
   role = aws_iam_role.ssm_instance_role.name
-} 
+}
+
+resource "aws_ssm_document" "session_manager" {
+  name          = "SSM-SessionManagerRunShell"
+  document_type = "Session"
+  content = jsonencode({
+    schemaVersion = "1.0"
+    sessionType   = "Standard_Stream"
+    inputs = {
+      shellProfile = {
+        linux = "sudo -i"
+      }
+    }
+  })
+}
