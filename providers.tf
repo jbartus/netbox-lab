@@ -34,3 +34,28 @@ data "aws_ssm_parameter" "ubuntu_2404_ami_amd64" {
 data "aws_ssm_parameter" "windows_server_2022_ami_x86_64" {
   name = "/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base"
 }
+
+data "aws_ami" "rhel_97_ami_x86_64" {
+  most_recent = true
+  owners      = ["309956199498"]
+
+  filter {
+    name   = "name"
+    values = ["RHEL-9.7*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}

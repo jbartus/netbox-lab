@@ -93,3 +93,13 @@ variable "postgres_password" {
     error_message = "PostgreSQL password must be at least 8 characters long."
   }
 }
+
+variable "enable_ubuntu" {
+  type    = bool
+  default = false
+}
+
+variable "enable_rhel" {
+  type    = bool
+  default = false
+}
