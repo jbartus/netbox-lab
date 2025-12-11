@@ -17,6 +17,7 @@ LOCAL_IP="$(curl -H "X-aws-ec2-metadata-token: $${TOKEN}" 'http://169.254.169.25
 sed -i "s/VAULTIP/$${LOCAL_IP}/" orb.yaml
 
 cat << 'EOF' > .env
+DIODE_SERVER=grpc://${diode_server}:80/diode
 DIODE_CLIENT_ID=
 DIODE_CLIENT_SECRET=
 EOF
@@ -46,3 +47,33 @@ vault login dev-only-token
 vault kv put secret/cisco/v8000 password=Hardcode12345
 
 dnf -y install net-snmp-utils net-snmp-libs
+
+# setup a venv and install diode sdk (which requires python >3.10)
+dnf install -y python3.12 python3.12-devel
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install netboxlabs-diode-sdk
+
+# drop a wrapper script for dryrun_replay.py
+cat << 'EOF' > replay.sh
+#!/bin/bash
+
+set -euo pipefail
+
+# switch to the local venv and python 3.12
+source .venv/bin/activate
+
+# load env vars
+source .env
+
+# run dryrun_replay.py with the files passed as arguments
+python .venv/lib/python3.12/site-packages/netboxlabs/diode/scripts/dryrun_replay.py \
+  --app-name agent \
+  --app-version 1 \
+  --target "$DIODE_SERVER" \
+  --client-id "$DIODE_CLIENT_ID" \
+  --client-secret "$DIODE_CLIENT_SECRET" \
+  "$@"
+EOF
+
+chmod +x replay.sh

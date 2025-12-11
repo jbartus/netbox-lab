@@ -17,8 +17,8 @@ resource "aws_instance" "orb_instance" {
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.orb[0].id]
   user_data = templatefile("${path.module}/orb.sh.tpl", {
+    diode_server = aws_instance.nbe_instance[0].private_ip,
     orb_yaml = templatefile("${path.module}/orb.yaml.tpl", {
-      diode_server  = aws_instance.nbe_instance[0].private_ip,
       public_subnet = module.vpc.public_subnet_objects[0].cidr_block
       c8kv_ip       = aws_instance.c8kv_instance[0].private_ip
     })

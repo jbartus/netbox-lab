@@ -4,7 +4,9 @@ orb:
   backends:
     common:
       diode:
-        target: grpc://${diode_server}:80/diode
+        #dry_run: True
+        #dry_run_output_dir: /opt/orb
+        target: $${DIODE_SERVER}
         client_id: $${DIODE_CLIENT_ID}
         client_secret: $${DIODE_CLIENT_SECRET}
         agent_name: orb1
