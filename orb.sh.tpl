@@ -46,7 +46,7 @@ sudo yum -y install vault
 vault login dev-only-token
 vault kv put secret/cisco/v8000 password=Hardcode12345
 
-dnf -y install net-snmp-utils net-snmp-libs
+dnf -y install nmap net-snmp-utils net-snmp-libs
 
 # setup a venv and install diode sdk (which requires python >3.10)
 dnf install -y python3.12 python3.12-devel
