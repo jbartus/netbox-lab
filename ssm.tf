@@ -19,7 +19,7 @@ resource "aws_iam_instance_profile" "ssm_instance_profile" {
 }
 
 resource "aws_ssm_document" "session_manager" {
-  name          = "SSM-SessionManagerRunShell"
+  name          = "SSM-SessionManagerRunShell-${data.external.whoami.result.username}"
   document_type = "Session"
   content = jsonencode({
     schemaVersion = "1.0"
