@@ -71,7 +71,7 @@ curl -k -X POST https://localhost:443/admin/realms/foo/clients \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
-    "clientId": "nbe",
+    "clientId": "enterprise",
     "enabled": true,
     "protocol": "saml",
     "redirectUris": [
@@ -87,7 +87,7 @@ curl -k -X POST https://localhost:443/admin/realms/foo/clients \
 # get the ID of the client we just created
 CLIENT_ID=$(curl -k -X GET https://localhost:443/admin/realms/foo/clients \
   -H "Authorization: Bearer ${TOKEN}" \
-  -s | jq -r '.[] | select(.clientId=="nbe") | .id')
+  -s | jq -r '.[] | select(.clientId=="enterprise") | .id')
 
 # get the IDs of the default client scopes and delete them
 ROLE_LIST_SCOPE_ID=$(curl -k -X GET https://localhost:443/admin/realms/foo/client-scopes \

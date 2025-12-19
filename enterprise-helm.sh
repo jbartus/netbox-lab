@@ -3,8 +3,8 @@
 helm install netbox-enterprise oci://registry.enterprise.netboxlabs.com/netbox-enterprise/stable/netbox-enterprise \
   --namespace netbox-enterprise \
   --create-namespace \
-  --set global.license.id=$(grep nbe_token terraform.tfvars | awk '{print $3}' | sed 's/\"//g') \
-  --values nbe-values.yaml
+  --set global.license.id=$(grep enterprise_token terraform.tfvars | awk '{print $3}' | sed 's/"//g') \
+  --values enterprise-values.yaml
 
 kubectl -n netbox-enterprise wait \
   --for=condition=Ready pod -l app.kubernetes.io/name=netbox,app.kubernetes.io/component=netbox \

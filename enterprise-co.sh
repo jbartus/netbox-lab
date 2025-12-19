@@ -4,7 +4,7 @@ set -xeuo pipefail
 
 mkdir /tmp/wheelhouse
 
-NBE_SOURCE_POD="$( \
+ENTERPRISE_SOURCE_POD="$( \
   kubectl get pods -A \
   -o go-template='{{ range .items }}{{ .metadata.name }}{{ "\n" }}{{ end }}' \
   -l com.netboxlabs.netbox-enterprise/custom-plugins-upload=true \
@@ -12,7 +12,7 @@ NBE_SOURCE_POD="$( \
   | head -n 1 \
 )"
 
-kubectl cp -n kotsadm "${NBE_SOURCE_POD}:/opt/netbox/constraints.txt" /tmp/wheelhouse/constraints.txt
+kubectl cp -n kotsadm "${ENTERPRISE_SOURCE_POD}:/opt/netbox/constraints.txt" /tmp/wheelhouse/constraints.txt
 
 echo 'netboxlabs-netbox-custom-objects==0.1.0' > /tmp/wheelhouse/requirements.txt
 
@@ -30,4 +30,4 @@ pip download \
 
 tar -C /tmp -czf /tmp/wheelhouse.tar.gz wheelhouse
 
-kubectl cp -n kotsadm /tmp/wheelhouse.tar.gz "${NBE_SOURCE_POD}:/opt/netbox/netbox/media/wheelhouse.tar.gz"
+kubectl cp -n kotsadm /tmp/wheelhouse.tar.gz "${ENTERPRISE_SOURCE_POD}:/opt/netbox/netbox/media/wheelhouse.tar.gz"

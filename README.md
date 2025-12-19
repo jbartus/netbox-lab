@@ -3,18 +3,18 @@ this repo is a mix of mostly terraform-hcl and shell code that sets up four inst
 
 ## two on standalone VMs
 - `community.tf` and `community.sh` setup netbox community (open source)
-- `nbe.tf`, `nbe.sh.tpl` and `config.yaml.tpl` setup netbox enterprise ("on-prem")
+- `enterprise.tf`, `enterprise.sh.tpl` and `config.yaml.tpl` setup netbox enterprise ("on-prem")
 
 ## two on kubernetes (via helm charts)
 - `eks.tf` sets up a small EKS cluster running on spot instances
 - `community-helm.sh` sets up netbox community using an external RDS db from `postgres.tf`
-- `nbe-helm.sh` and `nbe-values.yaml` setup netbox enterprise on EKS
+- `enterprise-helm.sh` and `enterprise-values.yaml` setup netbox enterprise on EKS
 
 ## other bits
 - `c8kv.tf` sets up a [Cisco 8000V](https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8000v-edge-software/catalyst-8000v-edge-software-ds.html) ec2 instance running ios xe.  it doesn't do anything but exist to be a target of scanning/discovery/configuration-automation.
-- `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent (pointed at NBE & the above "router"), including a vault instance for a test/dummy "secret"
+- `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent (pointed at Enterprise & the above "router"), including a vault instance for a test/dummy "secret"
 - `ansible.tf` and `ansible.sh.tpl` setup a vm for running ansible playbooks/runbooks.  `ansible-in.yaml` populates a netbox instance with some dummy/demo data
-- `ad-ldap.tf` and `ad-ldap.ps1` setup a windows domain controller to act as an LDAP authentication source, which works with the example config in `ad-ldap-config.txt` placed in the Advanced Settings section of the NBE console
+- `ad-ldap.tf` and `ad-ldap.ps1` setup a windows domain controller to act as an LDAP authentication source, which works with the example config in `ad-ldap-config.txt` placed in the Advanced Settings section of the Enterprise console
 - `keycloak.tf` and `keyloak.sh` setup a keycloak server for SAML authentication, with a base/starter (that requires filling out a few things) in `saml-config.txt`  (note: you will also have to edit the redirect url in keycloak)
 
 ## plumbing

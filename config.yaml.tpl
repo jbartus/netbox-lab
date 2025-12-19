@@ -5,7 +5,7 @@ spec:
     accept_tos_2024_05_24:
       value: ACCEPT
     superuser_password:
-      valuePlaintext: ${nbe_admin_password}
+      valuePlaintext: ${enterprise_admin_password}
     replicas:
       value: "1"
     netbox_configuration_py:

@@ -23,37 +23,37 @@ variable "enable_enterprise" {
   default = false
 }
 
-variable "nbe_token" {
+variable "enterprise_token" {
   type        = string
   sensitive   = true
   description = "token supplied by Netbox Labs for your NetBox Enterprise instance."
   validation {
-    condition     = length(var.nbe_token) > 0
+    condition     = length(var.enterprise_token) > 0
     error_message = "NetBox Enterprise token must not be empty."
   }
 }
 
-variable "nbe_console_password" {
+variable "enterprise_console_password" {
   type        = string
   sensitive   = true
   description = "A password of at least 6 characters for the NetBox Enterprise console user."
   validation {
-    condition     = length(var.nbe_console_password) >= 6
+    condition     = length(var.enterprise_console_password) >= 6
     error_message = "NetBox Enterprise console password must be at least 6 characters long."
   }
 }
 
-variable "nbe_admin_password" {
+variable "enterprise_admin_password" {
   type        = string
   sensitive   = true
   description = "A password of at least 12 characters for the NetBox Enterprise admin user."
   validation {
-    condition     = length(var.nbe_admin_password) >= 12
+    condition     = length(var.enterprise_admin_password) >= 12
     error_message = "NetBox Enterprise admin password must be at least 12 characters long."
   }
 }
 
-variable "nbe_release_channel" {
+variable "enterprise_release_channel" {
   type        = string
   default     = "stable"
   description = "Release channel for NetBox Enterprise."
