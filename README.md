@@ -25,8 +25,8 @@ NOTE: this is all written/designed with the expectation that the environment be 
 measured in hours, rarely 24, and never lasting a weekend.
 nothing in here is to be taken as best practice or production level config.
 
-# prerequisites
-## mac os
+# pre-requisites
+## for mac os
 install homebrew (if you don't already have it)
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -34,7 +34,7 @@ install homebrew (if you don't already have it)
 ```
 brew install terraform awscli session-manager-plugin kubernetes-cli helm
 ```
-## ubuntu/wsl
+## for ubuntu/wsl
 ### terraform
 https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
 ### aws-cli
@@ -49,7 +49,7 @@ sudo apt install -y kubectl
 https://helm.sh/docs/intro/install/#from-apt-debianubuntu
 
 
-# how to use
+# how to use this repo
 - setup your aws cli authentication. verify with:
 ```
 aws sts get-caller-identity
