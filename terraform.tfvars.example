@@ -1,4 +1,4 @@
-aws_region                  = "us-east-1"
+aws_region                  = "us-east-2"
 enable_community            = true
 enable_ansible              = false
 enable_enterprise           = false
