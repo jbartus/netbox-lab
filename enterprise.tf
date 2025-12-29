@@ -44,7 +44,7 @@ resource "aws_instance" "enterprise_instance" {
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.enterprise_lab[0].id]
   user_data = templatefile("${path.module}/enterprise.sh.tpl", {
-    enterprise_token            = var.enterprise_token,
+    enterprise_license_id       = var.enterprise_license_id,
     enterprise_console_password = var.enterprise_console_password,
     enterprise_release_channel  = var.enterprise_release_channel,
     config_yaml = templatefile("${path.module}/config.yaml.tpl", {

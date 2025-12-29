@@ -23,13 +23,13 @@ variable "enable_enterprise" {
   default = false
 }
 
-variable "enterprise_token" {
+variable "enterprise_license_id" {
   type        = string
   sensitive   = true
-  description = "token supplied by Netbox Labs for your NetBox Enterprise instance."
+  description = "License ID supplied by Netbox Labs for your NetBox Enterprise instance."
   validation {
-    condition     = length(var.enterprise_token) > 0
-    error_message = "NetBox Enterprise token must not be empty."
+    condition     = length(var.enterprise_license_id) > 0
+    error_message = "NetBox Enterprise License ID must not be empty."
   }
 }
 
