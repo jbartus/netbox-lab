@@ -20,6 +20,10 @@ resource "aws_instance" "rhel_instance" {
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
 
+  root_block_device {
+    volume_size = 100
+  }
+
   tags = {
     Name = "rhel"
   }
