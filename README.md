@@ -88,6 +88,7 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
    ```
    terraform apply
    ```
+1. test or demonstrate your thing
 
    depending on what you enabled in your `terraform.tfvars` you will see a mix of URL and SSM outputs
 
@@ -99,7 +100,6 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
 
    login with the default credentials (`admin`/`admin`) or the ones you specified in `terraform.tfvars`
 
-1. test or demonstrate your thing
 1. cleanup (very important step!)
    ```
    terraform destroy
