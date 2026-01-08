@@ -90,7 +90,7 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
    ```
 1. test or demonstrate your thing
 
-   depending on what you enabled in your `terraform.tfvars` you will see a mix of URL and SSM outputs
+   depending on what you set to `true` in your `terraform.tfvars` you will see a mix of URL and SSM outputs
 
    for the SSM commands you can simply copy & paste them to get command line access to the VM in question, where you will almost always want to run `sudo -i` first thing
 
