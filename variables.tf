@@ -8,6 +8,11 @@ variable "aws_region" {
   }
 }
 
+variable "enable_docker" {
+  type    = bool
+  default = false
+}
+
 variable "enable_community" {
   type    = bool
   default = false

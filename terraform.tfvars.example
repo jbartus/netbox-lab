@@ -1,4 +1,5 @@
 aws_region                  = "us-east-2"
+enable_docker               = false
 enable_community            = true
 enable_ansible              = false
 enable_enterprise           = false
