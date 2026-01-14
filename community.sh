@@ -27,7 +27,7 @@ mkdir -p /opt/netbox/
 cd /opt/netbox/
 dnf install -y git
 git clone https://github.com/netbox-community/netbox.git .
-git checkout v4.4.5
+git checkout v4.5.0
 groupadd --system netbox
 adduser --system -g netbox netbox
 #chown --recursive netbox /opt/netbox/netbox/media/
@@ -39,6 +39,7 @@ sed -i "s/^ALLOWED_HOSTS = \[\]/ALLOWED_HOSTS = \['\*'\]/" configuration.py
 sed -i "s/'USER': '',\s*# PostgreSQL username/'USER': 'netbox',\t    # PostgreSQL username/" configuration.py
 sed -i "s/'PASSWORD': '',\s*# PostgreSQL password/'PASSWORD': 'box_of_nets',# PostgreSQL username/" configuration.py
 sed -i "s/^SECRET_KEY = ''/SECRET_KEY = '12345678901234567890123456789012345678901234567890'/" configuration.py
+echo 'API_TOKEN_PEPPERS = {1: "12345678901234567890123456789012345678901234567890"}' >> configuration.py
 PYTHON=/usr/bin/python3.12 /opt/netbox/upgrade.sh
 source /opt/netbox/venv/bin/activate
 cd /opt/netbox/netbox
@@ -74,8 +75,8 @@ sudo -u postgres psql -c "CREATE database netbox;"
 sudo -u postgres psql -c "ALTER DATABASE netbox OWNER TO netbox;"
 sudo -u postgres psql -d netbox -c "GRANT CREATE ON SCHEMA public TO netbox;"
 
-wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.4.sql
-sudo -u postgres psql netbox < netbox-demo-v4.4.sql
+wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.5.sql
+sudo -u postgres psql netbox < netbox-demo-v4.5.sql
 
 systemctl start redis6
 systemctl start netbox
