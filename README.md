@@ -108,6 +108,7 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
 # what does it do?
 - `vpc.tf` creates the base vpc that all of this lives in
 - `ssm.tf` enables the use of ssm-session-manager, which means we don't expose ssh ports or bother with ssh keys, and we can use the aws console's ec2 instance "connect" option to display the terminal in a browser.
+- `docker.tf` and `docker.sh` setup the community [netbox-docker](https://github.com/netbox-community/netbox-docker) `docker compose` stack
 - `community.tf` and `community.sh` setup netbox community (open source)
 - `enterprise.tf`, `enterprise.sh.tpl` and `config.yaml.tpl` setup netbox enterprise ("on-prem")
 - `c8kv.tf` sets up a [Cisco 8000V](https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8000v-edge-software/catalyst-8000v-edge-software-ds.html) ec2 instance running ios xe.  it doesn't do anything but exist to be a target of scanning/discovery/configuration-automation.
