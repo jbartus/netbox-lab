@@ -10,6 +10,15 @@ resource "aws_vpc_security_group_egress_rule" "ansible_allow_all_out" {
   ip_protocol       = "-1"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "ansible_allow_webhook_in" {
+  count             = var.enable_ansible ? 1 : 0
+  security_group_id = aws_security_group.ansible[0].id
+  cidr_ipv4         = module.vpc.vpc_cidr_block
+  from_port         = 5000
+  to_port           = 5000
+  ip_protocol       = "tcp"
+}
+
 resource "aws_instance" "ansible_instance" {
   count                  = var.enable_ansible ? 1 : 0
   ami                    = data.aws_ssm_parameter.al2023_ami_arm64.value
@@ -18,6 +27,9 @@ resource "aws_instance" "ansible_instance" {
   vpc_security_group_ids = [aws_security_group.ansible[0].id]
   user_data = templatefile("${path.module}/ansible.sh.tpl", {
     ansible_in_yaml = file("${path.module}/ansible-in.yaml")
+    rulebook_yaml   = file("${path.module}/rulebook.yaml")
+    int_desc_yaml   = file("${path.module}/int-desc.yaml")
+    c8kv_ip         = aws_instance.c8kv_instance[0].private_ip
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name

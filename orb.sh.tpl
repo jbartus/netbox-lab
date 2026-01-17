@@ -44,7 +44,7 @@ sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinu
 sudo yum -y install vault
 
 vault login dev-only-token
-vault kv put secret/cisco/v8000 password=Hardcode12345
+vault kv put secret/cisco/v8000 password=hardcode
 
 dnf -y install nmap net-snmp-utils net-snmp-libs
 

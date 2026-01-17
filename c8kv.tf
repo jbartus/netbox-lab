@@ -53,7 +53,7 @@ resource "aws_instance" "c8kv_instance" {
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.c8kv[0].id]
   associate_public_ip_address = true
-  user_data                   = "Section: IOS configuration\nusername iosuser privilege 15 secret Hardcode12345\nsnmp-server community public ro"
+  user_data                   = "Section: IOS configuration\nusername iosuser privilege 15 secret hardcode\nsnmp-server community public ro"
 
   tags = {
     Name = "c8kv"
