@@ -1,0 +1,16 @@
+# ansible-rulebook --rulebook rulebook.yaml -i inventory &
+---
+- name: listen for webhooks and run playbooks
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+  rules:
+    - name: update interface descriptions on change 
+      condition: event.payload.event == "updated" and event.payload.model == "interface"
+      action:
+        run_playbook:
+          name: /root/int-desc.yaml
+          extra_vars:
+            description: "{{ event.payload.data.description }}"
