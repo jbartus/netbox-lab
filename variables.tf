@@ -108,3 +108,38 @@ variable "enable_rhel" {
   type    = bool
   default = false
 }
+
+variable "enable_neko" {
+  type    = bool
+  default = false
+}
+
+variable "neko_license_id" {
+  type        = string
+  sensitive   = true
+  description = "License ID supplied by Netbox Labs for your NetBox Enterprise instance."
+  validation {
+    condition     = length(var.neko_license_id) > 0
+    error_message = "NetBox Enterprise License ID must not be empty."
+  }
+}
+
+variable "neko_console_password" {
+  type        = string
+  sensitive   = true
+  description = "A password of at least 6 characters for the NetBox Enterprise console user."
+  validation {
+    condition     = length(var.neko_console_password) >= 6
+    error_message = "NetBox Enterprise console password must be at least 6 characters long."
+  }
+}
+
+variable "neko_admin_password" {
+  type        = string
+  sensitive   = true
+  description = "A password of at least 12 characters for the NetBox Enterprise admin user."
+  validation {
+    condition     = length(var.neko_admin_password) >= 12
+    error_message = "NetBox Enterprise admin password must be at least 12 characters long."
+  }
+}
