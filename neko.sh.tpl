@@ -15,5 +15,5 @@ EOF
 
 ./neko install --license license.yaml --admin-console-password ${neko_console_password} --config-values config.yaml
 
-# automatically run enterprise shell on login
+# automatically run neko shell on login
 echo './neko shell' >> /root/.bash_profile
