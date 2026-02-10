@@ -17,7 +17,11 @@ LOCAL_IP="$(curl -H "X-aws-ec2-metadata-token: $${TOKEN}" 'http://169.254.169.25
 sed -i "s/VAULTIP/$${LOCAL_IP}/" orb.yaml
 
 cat << 'EOF' > .env
+%{ if diode_server != "" ~}
 DIODE_SERVER=grpc://${diode_server}:80/diode
+%{ else ~}
+DIODE_SERVER=
+%{ endif ~}
 DIODE_CLIENT_ID=
 DIODE_CLIENT_SECRET=
 EOF

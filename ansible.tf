@@ -37,6 +37,13 @@ resource "aws_instance" "ansible_instance" {
   tags = {
     Name = "ansible"
   }
+
+  lifecycle {
+    precondition {
+      condition     = var.enable_discovery
+      error_message = "Ansible requires enable_discovery = true (for the c8kv target)."
+    }
+  }
 }
 
 output "ansible_ssm_command" {
