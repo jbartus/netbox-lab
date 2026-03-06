@@ -28,6 +28,11 @@ variable "enable_enterprise" {
   default = false
 }
 
+variable "enable_ent_ha" {
+  type    = bool
+  default = false
+}
+
 variable "enterprise_license_id" {
   type        = string
   sensitive   = true
