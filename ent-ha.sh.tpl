@@ -14,3 +14,11 @@ ${config_yaml}
 EOF
 
 ./netbox-enterprise install --license license.yaml --admin-console-password ${enterprise_console_password} --config-values config.yaml
+
+sleep 360
+
+mkdir joincmds
+./netbox-enterprise join print-command > joincmds/node2.sh
+./netbox-enterprise join print-command > joincmds/node3.sh
+cd joincmds
+nohup python3 -m http.server 30001 &>/dev/null &

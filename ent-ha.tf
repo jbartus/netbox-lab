@@ -96,6 +96,15 @@ resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_console_in" {
   ip_protocol       = "tcp"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_joincmd_in" {
+  count                        = var.enable_ent_ha ? 1 : 0
+  security_group_id            = aws_security_group.ent_ha_lab[0].id
+  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
+  from_port                    = 30001
+  to_port                      = 30001
+  ip_protocol                  = "tcp"
+}
+
 resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_apiserver_in" {
   count                        = var.enable_ent_ha ? 1 : 0
   security_group_id            = aws_security_group.ent_ha_lab[0].id
@@ -192,6 +201,9 @@ resource "aws_instance" "ent_ha_node2" {
   vpc_security_group_ids      = [aws_security_group.ent_ha_lab[0].id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+  user_data = templatefile("${path.module}/ent-ha-node2.sh.tpl", {
+    node1_ip = aws_instance.ent_ha_node1[0].private_ip
+  })
 
   root_block_device {
     volume_size = 100
@@ -210,6 +222,9 @@ resource "aws_instance" "ent_ha_node3" {
   vpc_security_group_ids      = [aws_security_group.ent_ha_lab[0].id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+  user_data = templatefile("${path.module}/ent-ha-node3.sh.tpl", {
+    node1_ip = aws_instance.ent_ha_node1[0].private_ip
+  })
 
   root_block_device {
     volume_size = 100
@@ -292,7 +307,10 @@ resource "aws_lb_target_group" "ent_ha" {
   }
 
   health_check {
-    protocol = "TCP"
+    protocol            = "TCP"
+    interval            = 10
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
   }
 }
 
@@ -347,8 +365,4 @@ output "ent_ha_node3_ssm_command" {
 
 output "ent_ha_node1_console_url" {
   value = var.enable_ent_ha ? "https://${aws_instance.ent_ha_node1[0].public_ip}:30000" : null
-}
-
-output "ent_ha_node1_webui_url" {
-  value = var.enable_ent_ha ? "https://${aws_instance.ent_ha_node1[0].public_ip}" : null
 }
