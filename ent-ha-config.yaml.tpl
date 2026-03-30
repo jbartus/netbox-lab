@@ -6,8 +6,6 @@ spec:
       value: ACCEPT
     superuser_password:
       valuePlaintext: ${admin_password}
-    replicas:
-      value: "1"
     embedded_postgres_enabled:
       value: "0"
     postgres_external_host:
