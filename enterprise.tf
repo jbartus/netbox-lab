@@ -50,7 +50,7 @@ resource "aws_instance" "enterprise_instance" {
     config_yaml = templatefile("${path.module}/config.yaml.tpl", {
       enterprise_admin_password = var.enterprise_admin_password
     })
-    enterprise_co_sh = file("${path.module}/enterprise-co.sh")
+    enterprise_wh_sh = file("${path.module}/enterprise-wheelhouse.sh")
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
