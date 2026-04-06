@@ -15,12 +15,12 @@ EOF
 
 ./netbox-enterprise install --license license.yaml --admin-console-password ${enterprise_console_password} --config-values config.yaml
 
-# place the custom-objects install script
-cat << 'EOF' > enterprise-co.sh
-${enterprise_co_sh}
+# place wheelhouse plugin install script
+cat << 'EOF' > enterprise-wheelhouse.sh
+${enterprise_wh_sh}
 EOF
 
-chmod +x enterprise-co.sh
+chmod +x enterprise-wheelhouse.sh
 
 # make a dummy cert for saml
 mkdir saml
