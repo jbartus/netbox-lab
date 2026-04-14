@@ -307,7 +307,9 @@ resource "aws_lb_target_group" "ent_ha" {
   }
 
   health_check {
-    protocol            = "TCP"
+    protocol            = "HTTP"
+    path                = "/login/"
+    matcher             = "200"
     interval            = 10
     healthy_threshold   = 2
     unhealthy_threshold = 2
