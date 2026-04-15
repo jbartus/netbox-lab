@@ -41,7 +41,7 @@ EOF
 
 chmod +x scan.sh
 
-docker run -d -p 8200:8200 -e 'VAULT_DEV_ROOT_TOKEN_ID=dev-only-token' hashicorp/vault
+docker run -d -p 8200:8200 -e 'VAULT_DEV_ROOT_TOKEN_ID=dev-only-token' -e 'SKIP_SETCAP=true' hashicorp/vault
 export VAULT_ADDR='http://127.0.0.1:8200'
 
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
