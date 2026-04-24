@@ -20,6 +20,12 @@ spec:
       value: ${hydra_pg_host}
     postgres_external_password_hydra:
       value: ${pg_password}
+    embedded_redis_enabled:
+      value: "0"
+    redis_external_host:
+      value: ${redis_host}
+    redis_external_ssl:
+      value: "0"
     embedded_file_storage_enabled:
       value: "0"
     s3_storage_bucket_name:
