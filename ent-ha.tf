@@ -57,6 +57,38 @@ resource "aws_db_instance" "hydra" {
   skip_final_snapshot    = true
 }
 
+resource "aws_elasticache_subnet_group" "ent_ha_redis" {
+  count      = var.enable_ent_ha ? 1 : 0
+  name       = "ent-ha-redis-subnet-group"
+  subnet_ids = module.vpc.private_subnets
+}
+
+resource "aws_security_group" "ent_ha_redis" {
+  count  = var.enable_ent_ha ? 1 : 0
+  vpc_id = module.vpc.vpc_id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ent_ha_redis_allow_in" {
+  count             = var.enable_ent_ha ? 1 : 0
+  security_group_id = aws_security_group.ent_ha_redis[0].id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 6379
+  to_port           = 6379
+  ip_protocol       = "tcp"
+}
+
+resource "aws_elasticache_cluster" "ent_ha_redis" {
+  count                = var.enable_ent_ha ? 1 : 0
+  cluster_id           = "ent-ha-redis"
+  engine               = "redis"
+  node_type            = "cache.t4g.medium"
+  num_cache_nodes      = 1
+  parameter_group_name = "default.redis7"
+  port                 = 6379
+  subnet_group_name    = aws_elasticache_subnet_group.ent_ha_redis[0].name
+  security_group_ids   = [aws_security_group.ent_ha_redis[0].id]
+}
+
 resource "aws_security_group" "ent_ha_lab" {
   count  = var.enable_ent_ha ? 1 : 0
   vpc_id = module.vpc.vpc_id
@@ -175,6 +207,7 @@ resource "aws_instance" "ent_ha_node1" {
       netbox_pg_host = aws_db_instance.netbox[0].address,
       diode_pg_host  = aws_db_instance.diode[0].address,
       hydra_pg_host  = aws_db_instance.hydra[0].address,
+      redis_host     = aws_elasticache_cluster.ent_ha_redis[0].cache_nodes[0].address,
       s3_bucket_name = aws_s3_bucket.ent_ha_files[0].id,
       s3_key_id      = aws_iam_access_key.ent_ha_s3[0].id,
       s3_access_key  = aws_iam_access_key.ent_ha_s3[0].secret,
@@ -186,6 +219,9 @@ resource "aws_instance" "ent_ha_node1" {
 
   root_block_device {
     volume_size = 100
+    volume_type = "gp3"
+    iops        = 6000
+    throughput  = 250
   }
 
   tags = {
@@ -207,6 +243,9 @@ resource "aws_instance" "ent_ha_node2" {
 
   root_block_device {
     volume_size = 100
+    volume_type = "gp3"
+    iops        = 6000
+    throughput  = 250
   }
 
   tags = {
@@ -228,6 +267,9 @@ resource "aws_instance" "ent_ha_node3" {
 
   root_block_device {
     volume_size = 100
+    volume_type = "gp3"
+    iops        = 6000
+    throughput  = 250
   }
 
   tags = {
