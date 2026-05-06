@@ -120,3 +120,7 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
 - `ad-ldap.tf` and `ad-ldap.ps1` setup a windows domain controller to act as an LDAP authentication source, which works with the example config in `ad-ldap-config.txt` placed in the Advanced Settings section of the Enterprise console
 - `keycloak.tf` and `keyloak.sh` setup a keycloak server for SAML authentication, with a base/starter (that requires filling out a few things) in `saml-config.txt`  (note: you will also have to edit the redirect url in keycloak)
 - `rhel.tf` and `ubuntu.tf` are just plain/bare standalone VMs for when I need to test specific-distro things
+
+# debug tips
+- `tail -n 50 /var/log/cloud-init-output.log`
+- `cat /var/lib/cloud/instance/scripts/part-001`
