@@ -74,6 +74,17 @@ variable "enable_discovery" {
   default = false
 }
 
+variable "enable_catcenter" {
+  type    = bool
+  default = false
+}
+
+variable "catcenter_ssh_password" {
+  type        = string
+  sensitive   = true
+  description = "Password for the Catalyst Center maglev (SSH) user."
+}
+
 variable "enable_ldap" {
   type    = bool
   default = false
