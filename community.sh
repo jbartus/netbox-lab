@@ -27,7 +27,7 @@ mkdir -p /opt/netbox/
 cd /opt/netbox/
 dnf install -y git
 git clone https://github.com/netbox-community/netbox.git .
-git checkout v4.5.2
+git checkout v4.6.0
 groupadd --system netbox
 adduser --system -g netbox netbox
 #chown --recursive netbox /opt/netbox/netbox/media/
@@ -75,8 +75,8 @@ sudo -u postgres psql -c "CREATE database netbox;"
 sudo -u postgres psql -c "ALTER DATABASE netbox OWNER TO netbox;"
 sudo -u postgres psql -d netbox -c "GRANT CREATE ON SCHEMA public TO netbox;"
 
-wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.5.sql
-sudo -u postgres psql netbox < netbox-demo-v4.5.sql
+wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.6.sql
+sudo -u postgres psql netbox < netbox-demo-v4.6.sql
 
 systemctl start redis6
 systemctl start netbox
