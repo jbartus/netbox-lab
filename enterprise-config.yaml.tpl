@@ -12,9 +12,6 @@ spec:
       value: |
         AUTH_PASSWORD_VALIDATORS = []
         PLUGINS=[
-          "netbox_topology_views",
-          "netbox_floorplan",
-          "netbox_dns",
           "netbox_qrcode",
           "netbox_reorder_rack"
         ]
