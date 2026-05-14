@@ -1,13 +1,3 @@
-variable "aws_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "value for the AWS region to deploy resources in, e.g. us-east-1, eu-west-2."
-  validation {
-    condition     = can(regex("^(us|eu|ap|sa|ca)-[a-z]+-[1-9]$", var.aws_region))
-    error_message = "Invalid AWS region format. Use 'us-east-1', 'eu-west-2', etc."
-  }
-}
-
 variable "enable_docker" {
   type    = bool
   default = false

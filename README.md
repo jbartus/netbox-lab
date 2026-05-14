@@ -69,14 +69,8 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
    ```
 
 1. edit your `terraform.tfvars` file
-   1. set your aws region
    1. enable the components you're looking to test or demo by setting them to `true`
    1. for netbox enteprise add your license id.
-
-1. check to be sure the region you just specified matches what your cli is configured to use
-   ```
-   aws ec2 describe-availability-zones --query "AvailabilityZones[0].RegionName"
-   ```
 
 1. run a `plan` to check for errors
    ```
