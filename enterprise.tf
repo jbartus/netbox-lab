@@ -47,7 +47,7 @@ resource "aws_instance" "enterprise_instance" {
     enterprise_license_id       = var.enterprise_license_id,
     enterprise_console_password = var.enterprise_console_password,
     enterprise_release_channel  = var.enterprise_release_channel,
-    config_yaml = templatefile("${path.module}/config.yaml.tpl", {
+    config_yaml = templatefile("${path.module}/enterprise-config.yaml.tpl", {
       enterprise_admin_password = var.enterprise_admin_password
     })
     enterprise_wh_sh = file("${path.module}/enterprise-wheelhouse.sh")
