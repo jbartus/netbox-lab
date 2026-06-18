@@ -56,7 +56,7 @@ cat << 'EOF' > /etc/systemd/system/ansible-rulebook.service
 Description=Ansible Rulebook
 
 [Service]
-ExecStart=/usr/local/bin/ansible-rulebook --rulebook /root/rulebook.yaml -i /root/inventory --verbose
+ExecStart=/usr/local/bin/ansible-rulebook --rulebook /root/rulebook.yaml -i /root/inventory -vvv
 Restart=always
 
 [Install]
