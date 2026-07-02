@@ -15,14 +15,3 @@ spec:
           "netbox_qrcode",
           "netbox_reorder_rack"
         ]
-
-        #PLUGINS_CONFIG = {
-        #  'netbox_changes': {
-        #    'protect_main': True
-        #  },
-        #  'netbox_branching': {
-        #    'merge_validators': ['netbox_changes.validators.change_request_approved']
-        #  }
-        #}
-
-
