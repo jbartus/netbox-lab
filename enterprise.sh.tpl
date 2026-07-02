@@ -13,7 +13,7 @@ cat << 'EOF' > config.yaml
 ${config_yaml}
 EOF
 
-./netbox-enterprise install --license license.yaml --admin-console-password ${enterprise_console_password} --config-values config.yaml
+./netbox-enterprise install --license license.yaml --admin-console-password ${enterprise_console_password} --config-values config.yaml --yes
 
 # place wheelhouse plugin install script
 cat << 'EOF' > enterprise-wheelhouse.sh
