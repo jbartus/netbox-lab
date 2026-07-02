@@ -85,8 +85,8 @@ systemctl start nginx
 
 # plugins
 source /opt/netbox/venv/bin/activate
-pip install netbox_topology_views netboxlabs-netbox-custom-objects
-sed -i "s/PLUGINS = \[\]/PLUGINS = ['netbox_topology_views', 'netbox_custom_objects']/" /opt/netbox/netbox/netbox/configuration.py
+pip install netboxlabs-netbox-custom-objects
+sed -i "s/PLUGINS = \[\]/PLUGINS = ['netbox_custom_objects']/" /opt/netbox/netbox/netbox/configuration.py
 cd /opt/netbox/netbox/
 python3 manage.py migrate
 systemctl restart netbox netbox-rq
