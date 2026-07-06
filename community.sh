@@ -26,8 +26,8 @@ dnf install -y python3.12 python3.12-devel
 mkdir -p /opt/netbox/
 cd /opt/netbox/
 dnf install -y git
-git clone https://github.com/netbox-community/netbox.git .
-git checkout v4.6.0
+TAG=$(basename "$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/netbox-community/netbox/releases/latest)")
+git clone --depth 1 --branch "$TAG" https://github.com/netbox-community/netbox.git .
 groupadd --system netbox
 adduser --system -g netbox netbox
 #chown --recursive netbox /opt/netbox/netbox/media/
