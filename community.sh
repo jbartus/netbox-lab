@@ -30,7 +30,7 @@ TAG=$(basename "$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.
 git clone --depth 1 --branch "$TAG" https://github.com/netbox-community/netbox.git .
 groupadd --system netbox
 adduser --system -g netbox netbox
-#chown --recursive netbox /opt/netbox/netbox/media/
+chown --recursive netbox /opt/netbox/netbox/media/
 chown --recursive netbox /opt/netbox/netbox/reports/
 chown --recursive netbox /opt/netbox/netbox/scripts/
 cd /opt/netbox/netbox/netbox/
