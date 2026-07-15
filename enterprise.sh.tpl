@@ -35,3 +35,9 @@ alias klogs='kubectl -n kotsadm logs deployment/netbox-enterprise -f'
 alias kexec='kubectl -n kotsadm exec deployment/netbox-enterprise -it -- /bin/bash'
 EOF
 
+# diode db flush
+cat << 'EOF' >> clear-deviations.sh
+${clear_deviations_sh}
+EOF
+
+chmod +x clear-deviations.sh

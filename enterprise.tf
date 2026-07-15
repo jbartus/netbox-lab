@@ -51,6 +51,7 @@ resource "aws_instance" "enterprise_instance" {
       enterprise_admin_password = var.enterprise_admin_password
     })
     enterprise_wh_sh = file("${path.module}/enterprise-wheelhouse.sh")
+    clear_deviations_sh = file("${path.module}/clear-deviations.sh")
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
