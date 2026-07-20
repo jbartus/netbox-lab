@@ -148,59 +148,43 @@ resource "netbox_power_feed" "b-power" {
 }
 
 resource "netbox_rack" "mmr2_rack1" {
-  name        = "rack1"
-  role_id     = netbox_rack_role.networking.id
-  status      = "active"
-  site_id     = netbox_site._165halsey.id
-  location_id = netbox_location.mmr2.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack1"
+  role_id      = netbox_rack_role.networking.id
+  status       = "active"
+  site_id      = netbox_site._165halsey.id
+  location_id  = netbox_location.mmr2.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_rack" "mmr2_rack2" {
-  name        = "rack2"
-  status      = "active"
-  role_id     = netbox_rack_role.networking.id
-  site_id     = netbox_site._165halsey.id
-  location_id = netbox_location.mmr2.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack2"
+  status       = "active"
+  role_id      = netbox_rack_role.networking.id
+  site_id      = netbox_site._165halsey.id
+  location_id  = netbox_location.mmr2.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_rack" "mmr2_rack3" {
-  name        = "rack3"
-  status      = "active"
-  role_id     = netbox_rack_role.compute.id
-  site_id     = netbox_site._165halsey.id
-  location_id = netbox_location.mmr2.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack3"
+  status       = "active"
+  role_id      = netbox_rack_role.compute.id
+  site_id      = netbox_site._165halsey.id
+  location_id  = netbox_location.mmr2.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_rack" "mmr2_rack4" {
-  name        = "rack4"
-  status      = "active"
-  role_id     = netbox_rack_role.compute.id
-  site_id     = netbox_site._165halsey.id
-  location_id = netbox_location.mmr2.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack4"
+  status       = "active"
+  role_id      = netbox_rack_role.compute.id
+  site_id      = netbox_site._165halsey.id
+  location_id  = netbox_location.mmr2.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_site" "_375pearl" {
@@ -229,59 +213,43 @@ resource "netbox_location" "floor30" {
 }
 
 resource "netbox_rack" "floor30_rack1" {
-  name        = "rack1"
-  status      = "active"
-  role_id     = netbox_rack_role.networking.id
-  site_id     = netbox_site._375pearl.id
-  location_id = netbox_location.floor30.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack1"
+  status       = "active"
+  role_id      = netbox_rack_role.networking.id
+  site_id      = netbox_site._375pearl.id
+  location_id  = netbox_location.floor30.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_rack" "floor30_rack2" {
-  name        = "rack2"
-  status      = "active"
-  role_id     = netbox_rack_role.networking.id
-  site_id     = netbox_site._375pearl.id
-  location_id = netbox_location.floor30.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack2"
+  status       = "active"
+  role_id      = netbox_rack_role.networking.id
+  site_id      = netbox_site._375pearl.id
+  location_id  = netbox_location.floor30.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_rack" "floor30_rack3" {
-  name        = "rack3"
-  status      = "active"
-  role_id     = netbox_rack_role.compute.id
-  site_id     = netbox_site._375pearl.id
-  location_id = netbox_location.floor30.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack3"
+  status       = "active"
+  role_id      = netbox_rack_role.compute.id
+  site_id      = netbox_site._375pearl.id
+  location_id  = netbox_location.floor30.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_rack" "floor30_rack4" {
-  name        = "rack4"
-  status      = "active"
-  role_id     = netbox_rack_role.compute.id
-  site_id     = netbox_site._375pearl.id
-  location_id = netbox_location.floor30.id
-  tenant_id   = netbox_tenant.vaulter.id
-  outer_width = 24
-  outer_depth = 40
-  outer_unit  = "in"
-  u_height    = 42
-  width       = 19
+  name         = "rack4"
+  status       = "active"
+  role_id      = netbox_rack_role.compute.id
+  site_id      = netbox_site._375pearl.id
+  location_id  = netbox_location.floor30.id
+  tenant_id    = netbox_tenant.vaulter.id
+  rack_type_id = netbox_rack_type.ar3350b2.id
 }
 
 resource "netbox_config_template" "ios_ntp" {
