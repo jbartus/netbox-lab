@@ -198,7 +198,7 @@ resource "netbox_site" "_375pearl" {
 
 resource "netbox_config_context" "jfk_ntp" {
   name  = "jfk-ntp"
-  sites = [netbox_site._165halsey.id]
+  sites = [netbox_site._375pearl.id]
   data = jsonencode({
     ntp_servers = [
       "2.pool.ntp.org",
