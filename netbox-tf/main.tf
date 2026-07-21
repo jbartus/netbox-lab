@@ -52,11 +52,12 @@ resource "netbox_rack_type" "ar3350b2" {
   outer_unit      = "mm"
   outer_width     = 750
   outer_depth     = 1200
-  comments        = "https://www.apc.com/us/en/product/AR3350B2/apc-netshelter-sx-server-rack-gen-2-42u-1991h-x-750w-x-1200d-mm-with-sides-black-taa/"
+  comments        = "[Datasheet](https://www.apc.com/us/en/product/AR3350B2/apc-netshelter-sx-server-rack-gen-2-42u-1991h-x-750w-x-1200d-mm-with-sides-black-taa/)"
 }
 
 resource "netbox_tenant" "vaulter" {
-  name = "Vaulter"
+  name        = "Vaulter"
+  description = "Vaulter.com - all the bait thats fit to click"
 }
 
 resource "netbox_rack_role" "networking" {
@@ -71,6 +72,7 @@ resource "netbox_rack_role" "compute" {
 
 resource "netbox_site" "_165halsey" {
   name             = "165 Halsey"
+  tenant_id        = netbox_tenant.vaulter.id
   description      = "https://www.165halsey.com"
   timezone         = "America/New_York"
   physical_address = "165 Halsey Street, Newark, NJ 07102"
@@ -189,11 +191,25 @@ resource "netbox_rack" "mmr2_rack4" {
 
 resource "netbox_site" "_375pearl" {
   name             = "375 Pearl"
+  tenant_id        = netbox_tenant.vaulter.id
   description      = "https://375pearl.com"
   timezone         = "America/New_York"
   physical_address = "375 Pearl St, New York, NY 10038"
   latitude         = "40.710945"
   longitude        = "-74.001178"
+}
+
+resource "netbox_contact" "mos" {
+  name  = "Mo S."
+  email = "mo@hso.com"
+  phone = "555-959-5220"
+}
+
+resource "netbox_contact_assignment" "mos_375pearl" {
+  content_type = "dcim.site"
+  object_id    = netbox_site._375pearl.id
+  contact_id   = netbox_contact.mos.id
+  role_id      = netbox_contact_role.colomgr.id
 }
 
 resource "netbox_config_context" "jfk_ntp" {
@@ -250,6 +266,55 @@ resource "netbox_rack" "floor30_rack4" {
   location_id  = netbox_location.floor30.id
   tenant_id    = netbox_tenant.vaulter.id
   rack_type_id = netbox_rack_type.ar3350b2.id
+}
+
+resource "netbox_circuit_provider" "cogent" {
+  name = "Cogent"
+}
+
+resource "netbox_contact_role" "support" {
+  name = "Support"
+}
+
+resource "netbox_contact" "cogent_support" {
+  name  = "Cogent Customer Support"
+  email = "support@cogentco.com"
+  phone = "877-726-4368"
+}
+
+resource "netbox_contact_assignment" "cogent_support" {
+  content_type = "circuits.provider"
+  object_id    = netbox_circuit_provider.cogent.id
+  contact_id   = netbox_contact.cogent_support.id
+  role_id      = netbox_contact_role.support.id
+}
+
+resource "netbox_circuit_type" "epl" {
+  name = "Ethernet Private Line"
+  slug = "epl"
+}
+
+resource "netbox_circuit" "ewr_jfk" {
+  cid         = "1-300123456"
+  description = "ewr<->jfk"
+  provider_id = netbox_circuit_provider.cogent.id
+  type_id     = netbox_circuit_type.epl.id
+  status      = "active"
+  tenant_id   = netbox_tenant.vaulter.id
+}
+
+resource "netbox_circuit_termination" "ewr_jfk_a" {
+  circuit_id = netbox_circuit.ewr_jfk.id
+  term_side  = "A"
+  site_id    = netbox_site._165halsey.id
+  port_speed = 10000000
+}
+
+resource "netbox_circuit_termination" "ewr_jfk_z" {
+  circuit_id = netbox_circuit.ewr_jfk.id
+  term_side  = "Z"
+  site_id    = netbox_site._375pearl.id
+  port_speed = 10000000
 }
 
 resource "netbox_config_template" "ios_ntp" {
