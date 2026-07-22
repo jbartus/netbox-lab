@@ -107,7 +107,7 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
 - `enterprise.tf`, `enterprise.sh.tpl` and `config.yaml.tpl` setup netbox enterprise ("on-prem")
 - `c8kv.tf` sets up a [Cisco 8000V](https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8000v-edge-software/catalyst-8000v-edge-software-ds.html) ec2 instance running ios xe.  it doesn't do anything but exist to be a target of scanning/discovery/configuration-automation.
 - `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent (pointed at the enterprise VM & the above "router" VM), including a vault instance for a test/dummy "secret"
-- `dhcp.tf` and `dhcp.ps1` setup a standalone windows server 2022 running the DHCP role (seeded with a few dummy scopes) reachable over WinRM.  it acts as a data source for the [NetBox Microsoft DHCP integration](https://netboxlabs.com/docs/integrations/ms-dhcp/getting-started/)
+- `msft-dns-dhcp.tf` and `msft-dns-dhcp.ps1` setup a standalone windows server 2022 running both DNS and DHCP.  acts as a combined data source for the [NetBox Microsoft DNS integration](https://netboxlabs.com/docs/integrations/ms-dns/getting-started/) and the [NetBox Microsoft DHCP integration](https://netboxlabs.com/docs/integrations/ms-dhcp/getting-started/)
 - `eks.tf` sets up a small EKS cluster running on spot instances
 - `community-helm.sh` sets up netbox community using an external RDS db from `postgres.tf`
 - `enterprise-helm.sh` and `enterprise-values.yaml` setup netbox enterprise on EKS

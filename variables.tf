@@ -64,7 +64,7 @@ variable "enable_discovery" {
   default = false
 }
 
-variable "enable_dhcp" {
+variable "enable_msft_dns_dhcp" {
   type    = bool
   default = false
 }
