@@ -1,6 +1,5 @@
 <powershell>
-# standalone (workgroup) Windows DHCP server for the NetBox Microsoft DHCP integration.
-# no domain, so everything runs inline in this one user_data pass - no reboot, no scheduled task.
+# standalone (workgroup/no-domain) Windows DHCP server for the NetBox Microsoft DHCP integration.
 
 # install the DHCP role + management tools (this is what the integration reads over WinRM)
 Install-WindowsFeature DHCP -IncludeManagementTools

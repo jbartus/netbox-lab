@@ -43,22 +43,6 @@ resource "aws_instance" "dhcp_instance" {
   }
 }
 
-output "dhcp_private_ip" {
-  value = var.enable_dhcp ? aws_instance.dhcp_instance[0].private_ip : null
-}
-
-output "dhcp_winrm" {
-  value = var.enable_dhcp ? "winrm://${aws_instance.dhcp_instance[0].private_ip}:5985" : null
-}
-
-output "dhcp_service_account" {
-  value = var.enable_dhcp ? ".\\svc-netbox" : null
-}
-
-output "dhcp_service_password" {
-  value = var.enable_dhcp ? "NetBoxDHCP123!" : null
-}
-
 output "dhcp_ssm_command" {
   value = var.enable_dhcp ? "aws ssm start-session --target ${aws_instance.dhcp_instance[0].id}" : null
 }
