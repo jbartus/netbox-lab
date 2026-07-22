@@ -64,6 +64,11 @@ variable "enable_discovery" {
   default = false
 }
 
+variable "enable_dhcp" {
+  type    = bool
+  default = false
+}
+
 variable "nbl_registry_user" {
   type      = string
   sensitive = true

@@ -13,6 +13,7 @@ orb:
     network_discovery:
     device_discovery:
     snmp_discovery:
+    worker:
   secrets_manager:
     active: vault
     sources:
@@ -47,3 +48,15 @@ orb:
 #          authentication:
 #            protocol_version: "SNMPv2c"
 #            community: "public"
+#    worker:
+#      msft_dhcp_worker:
+#        config:
+#          package: nbl_msft_dhcp
+#          MSFT_DHCP_HOST: "${dhcp_ip}"
+#          MSFT_DHCP_USERNAME: ".\\svc-netbox"
+#          MSFT_DHCP_PASSWORD: "NetBoxDHCP123!"
+#          MSFT_DHCP_PORT: 5985
+#          MSFT_DHCP_USE_SSL: false
+#          MSFT_DHCP_VERIFY_SSL: false
+#          BOOTSTRAP: True
+#        scope:

@@ -23,6 +23,7 @@ resource "aws_instance" "orb_instance" {
     orb_yaml = templatefile("${path.module}/orb.yaml.tpl", {
       public_subnet = module.vpc.public_subnet_objects[0].cidr_block
       c8kv_ip       = aws_instance.c8kv_instance[0].private_ip
+      dhcp_ip       = var.enable_dhcp ? aws_instance.dhcp_instance[0].private_ip : ""
     })
   })
   associate_public_ip_address = true
