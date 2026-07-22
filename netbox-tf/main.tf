@@ -29,6 +29,7 @@ resource "netbox_device_type" "c8000v" {
   manufacturer_id = netbox_manufacturer.cisco.id
   model           = "C8000V"
   slug            = "c8000v"
+  u_height        = 0
 }
 
 resource "netbox_manufacturer" "apc" {
@@ -37,6 +38,28 @@ resource "netbox_manufacturer" "apc" {
 
 resource "netbox_manufacturer" "hpe" {
   name = "HPE"
+}
+
+resource "terraform_data" "ndx_import" {
+  input      = ["hpe/hpe-proliant-dl360-gen11"]
+  depends_on = [netbox_manufacturer.hpe]
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = <<-EOT
+      set -euo pipefail
+      curl -sS --fail-with-body -X POST "${var.netbox_server_url}/api/plugins/ndx/import/" \
+        -H "Authorization: Token ${var.netbox_api_token}" \
+        -H "Content-Type: application/json" \
+        -d '${jsonencode({ ndx_ids = self.input })}' \
+      | jq -e 'all(.results[]; .success)' >/dev/null
+    EOT
+  }
+}
+
+data "netbox_device_type" "dl360" {
+  slug       = "hpe-proliant-dl360-gen11"
+  depends_on = [terraform_data.ndx_import]
 }
 
 resource "netbox_device_role" "server" {
@@ -196,6 +219,19 @@ resource "netbox_rack" "mmr2_rack4" {
   location_id  = netbox_location.mmr2.id
   tenant_id    = netbox_tenant.vaulter.id
   rack_type_id = netbox_rack_type.ar3350b2.id
+}
+
+resource "netbox_device" "server01" {
+  name           = "server01"
+  device_type_id = data.netbox_device_type.dl360.id
+  role_id        = netbox_device_role.server.id
+  site_id        = netbox_site._165halsey.id
+  location_id    = netbox_location.mmr2.id
+  rack_id        = netbox_rack.mmr2_rack3.id
+  rack_face      = "front"
+  rack_position  = 1
+  tenant_id      = netbox_tenant.vaulter.id
+  status         = "active"
 }
 
 resource "netbox_site" "_375pearl" {
