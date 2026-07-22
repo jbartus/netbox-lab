@@ -1,5 +1,5 @@
 # what is this
-this repo exists for me to learn netbox related functionality by doing things hands-on and commiting them as reproducable examples.  as a side-effect it also serves as a set of live demonstratable examples of netbox functionality.
+this repo exists for me to learn netbox related functionality by doing things hands-on and commiting them as reproducible examples.  as a side-effect it also serves as a set of live demonstrable examples of netbox functionality.
 
 this is fundamentally a terraform project, so the main workflow (once everything is setup) goes:
 
