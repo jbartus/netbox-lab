@@ -64,6 +64,16 @@ variable "enable_discovery" {
   default = false
 }
 
+variable "nbl_registry_user" {
+  type      = string
+  sensitive = true
+}
+
+variable "nbl_registry_token" {
+  type      = string
+  sensitive = true
+}
+
 variable "enable_catcenter" {
   type    = bool
   default = false

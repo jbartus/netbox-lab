@@ -4,7 +4,10 @@ set -xeuo pipefail
 
 dnf -y install docker
 systemctl enable --now docker
-docker pull netboxlabs/orb-agent:latest
+
+# get the orb pro agent
+docker login quay.io -u '${nbl_registry_user}' -p '${nbl_registry_token}'
+docker pull quay.io/netboxlabs/orb-agent-pro:latest
 
 cd /root
 
@@ -33,7 +36,7 @@ docker rm orb 2>/dev/null || true
 
 # run the scan
 docker run --env-file .env --net host -d --name orb -v $${PWD}:/opt/orb/ \
-  netboxlabs/orb-agent:latest run --config /opt/orb/orb.yaml
+  quay.io/netboxlabs/orb-agent-pro:latest run --config /opt/orb/orb.yaml
 
 # follow the logs
 docker logs orb -f
