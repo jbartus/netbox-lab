@@ -38,3 +38,8 @@ terraform.rc
 
 # Generated SSH private keys (e.g. catcenter-temp.pem)
 *.pem
+
+# Environment files with secrets (keep a committed example)
+.env
+.env.*
+!.env.example

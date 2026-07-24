@@ -2,10 +2,9 @@
 
 set -euo pipefail
 
-ORG_ID=""
-TARGET_NB_ID=""
-BACKUP_ID=""
-API_KEY=""
+# req'd vars
+[ -f .env ] && { set -o allexport; source ./.env; set +o allexport; }
+: "${ORG_ID:?}" "${TARGET_NB_ID:?}" "${BACKUP_ID:?}" "${API_KEY:?}"
 
 # retrieve the backup
 retrieval_id=$(curl -sS --fail-with-body "https://api.netboxlabs.com/v2/organization/${ORG_ID}/backup-retrieved/" \
