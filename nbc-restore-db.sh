@@ -11,7 +11,7 @@ API_KEY=""
 retrieval_id=$(curl -sS --fail-with-body "https://api.netboxlabs.com/v2/organization/${ORG_ID}/backup-retrieved/" \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json" \
-  -d "{\"backup_id\":\"${BACKUP_ID}\"}" | jq -r '.id')
+  -d "{\"backup_id\":\"${BACKUP_ID}\"}" | jq -re '.id')
 
 # wait until its retrieved
 until url=$(curl -sS --fail-with-body "https://api.netboxlabs.com/v2/organization/${ORG_ID}/backup-retrieved/" \
