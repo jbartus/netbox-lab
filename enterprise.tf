@@ -3,10 +3,19 @@ resource "aws_security_group" "enterprise_lab" {
   vpc_id = module.vpc.vpc_id
 }
 
+# allow outbound by default, but not if mitmproxy is enabled
 resource "aws_vpc_security_group_egress_rule" "enterprise_allow_all_out" {
-  count             = var.enable_enterprise ? 1 : 0
+  count             = var.enable_enterprise && !var.enable_mitmproxy ? 1 : 0
   security_group_id = aws_security_group.enterprise_lab[0].id
   cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+# allow communication with the proxy and vpc endpoints for ssm & dns
+resource "aws_vpc_security_group_egress_rule" "enterprise_allow_vpc_out" {
+  count             = var.enable_enterprise && var.enable_mitmproxy ? 1 : 0
+  security_group_id = aws_security_group.enterprise_lab[0].id
+  cidr_ipv4         = module.vpc.vpc_cidr_block
   ip_protocol       = "-1"
 }
 
@@ -52,6 +61,8 @@ resource "aws_instance" "enterprise_instance" {
     })
     enterprise_wh_sh    = file("${path.module}/enterprise-wheelhouse.sh")
     clear_deviations_sh = file("${path.module}/clear-deviations.sh")
+    proxy_url           = var.enable_mitmproxy ? "http://testuser:passw0rd@${aws_instance.mitmproxy_instance[0].private_ip}:8080" : ""
+    ca_cert_pem         = var.enable_mitmproxy ? tls_self_signed_cert.mitmproxy_ca[0].cert_pem : ""
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name

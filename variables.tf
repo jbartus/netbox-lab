@@ -3,6 +3,11 @@ variable "enable_docker" {
   default = false
 }
 
+variable "enable_mitmproxy" {
+  type    = bool
+  default = false
+}
+
 variable "enable_community" {
   type    = bool
   default = false

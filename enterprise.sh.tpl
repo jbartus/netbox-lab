@@ -4,6 +4,20 @@ set -xeuo pipefail
 
 cd /root
 
+%{ if proxy_url != "" ~}
+# used by curl, ignored by EC (which needs them passed explicitly as install command args)
+export http_proxy="${proxy_url}" https_proxy="${proxy_url}"
+
+# add the tls proxy cert to this hosts trust store
+cat > /etc/pki/ca-trust/source/anchors/mitmproxy-ca-cert.pem << 'CACERT'
+${ca_cert_pem}
+CACERT
+update-ca-trust
+
+# wait for mitmproxy to work
+until curl -s -o /dev/null https://app.enterprise.netboxlabs.com; do sleep 5; done
+%{ endif ~}
+
 # install netbox enterprise
 curl -f "https://app.enterprise.netboxlabs.com/embedded/netbox-enterprise/${enterprise_release_channel}" -H "Authorization: ${enterprise_license_id}" -o netbox-enterprise-${enterprise_release_channel}.tgz -s
 
@@ -13,7 +27,15 @@ cat << 'EOF' > config.yaml
 ${config_yaml}
 EOF
 
-./netbox-enterprise install --license license.yaml --admin-console-password ${enterprise_console_password} --config-values config.yaml --yes
+./netbox-enterprise install \
+  --license license.yaml \
+  --admin-console-password ${enterprise_console_password} \
+  --config-values config.yaml \
+%{ if proxy_url != "" ~}
+  --http-proxy ${proxy_url} \
+  --https-proxy ${proxy_url} \
+%{ endif ~}
+  --yes
 
 # place wheelhouse plugin install script
 cat << 'EOF' > enterprise-wheelhouse.sh

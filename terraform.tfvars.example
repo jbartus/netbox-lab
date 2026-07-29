@@ -19,3 +19,4 @@ enable_postgres             = false
 postgres_password           = "yesql123"
 enable_rhel                 = false
 enable_ubuntu               = false
+enable_mitmproxy            = false
