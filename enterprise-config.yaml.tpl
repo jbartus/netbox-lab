@@ -15,3 +15,13 @@ spec:
           "netbox_qrcode",
           "netbox_reorder_rack"
         ]
+%{ if proxy_url != "" ~}
+        # interim workaround for NBE's empty-lowercase-proxy-env bug
+        # NetBox's documented HTTP_PROXIES makes outbound honor the proxy regardless
+        HTTP_PROXIES = {"http": "${proxy_url}", "https": "${proxy_url}"}
+%{ endif ~}
+%{ if ca_cert_pem != "" ~}
+    extra_ca_certificates:
+      value: |
+        ${indent(8, ca_cert_pem)}
+%{ endif ~}

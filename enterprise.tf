@@ -58,11 +58,14 @@ resource "aws_instance" "enterprise_instance" {
     enterprise_release_channel  = var.enterprise_release_channel,
     config_yaml = templatefile("${path.module}/enterprise-config.yaml.tpl", {
       enterprise_admin_password = var.enterprise_admin_password
+      ca_cert_pem               = local.mitmproxy_ca_cert
+      # interim workaround for the empty-lowercase-proxy-env bug
+      proxy_url = local.mitmproxy_proxy_url
     })
     enterprise_wh_sh    = file("${path.module}/enterprise-wheelhouse.sh")
     clear_deviations_sh = file("${path.module}/clear-deviations.sh")
-    proxy_url           = var.enable_mitmproxy ? "http://testuser:passw0rd@${aws_instance.mitmproxy_instance[0].private_ip}:8080" : ""
-    ca_cert_pem         = var.enable_mitmproxy ? tls_self_signed_cert.mitmproxy_ca[0].cert_pem : ""
+    proxy_url           = local.mitmproxy_proxy_url
+    ca_cert_pem         = local.mitmproxy_ca_cert
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name

@@ -1,3 +1,8 @@
+locals {
+  mitmproxy_proxy_url = var.enable_mitmproxy ? "http://testuser:passw0rd@${aws_instance.mitmproxy_instance[0].private_ip}:8080" : ""
+  mitmproxy_ca_cert   = var.enable_mitmproxy ? tls_self_signed_cert.mitmproxy_ca[0].cert_pem : ""
+}
+
 resource "aws_security_group" "mitmproxy" {
   count  = var.enable_mitmproxy ? 1 : 0
   vpc_id = module.vpc.vpc_id
