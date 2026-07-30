@@ -3,7 +3,31 @@
 set -xeuo pipefail
 
 dnf -y install docker
+
+%{ if proxy_url != "" ~}
+# route dockerd's image pulls through mitmproxy. The daemon ignores shell env,
+# so the proxy must be set in a systemd drop-in (set before docker starts).
+mkdir -p /etc/systemd/system/docker.service.d
+cat > /etc/systemd/system/docker.service.d/http-proxy.conf << EOF
+[Service]
+Environment="HTTP_PROXY=${proxy_url}"
+Environment="HTTPS_PROXY=${proxy_url}"
+Environment="NO_PROXY=localhost,127.0.0.1,169.254.169.254"
+EOF
+
+# trust the proxy CA so dockerd accepts the intercepted registry TLS
+cat > /etc/pki/ca-trust/source/anchors/mitmproxy-ca-cert.pem << 'CACERT'
+${ca_cert_pem}
+CACERT
+update-ca-trust
+%{ endif ~}
+
 systemctl enable --now docker
+
+%{ if proxy_url != "" ~}
+# mitmproxy boots in parallel; wait for it to answer before the pull depends on it
+until curl -s -o /dev/null --proxy "${proxy_url}" https://quay.io/v2/; do sleep 5; done
+%{ endif ~}
 
 # get the orb pro agent
 docker login quay.io -u '${nbl_registry_user}' -p '${nbl_registry_token}'

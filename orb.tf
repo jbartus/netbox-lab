@@ -20,6 +20,9 @@ resource "aws_instance" "orb_instance" {
     diode_server       = var.enable_enterprise ? aws_instance.enterprise_instance[0].private_ip : "",
     nbl_registry_user  = var.nbl_registry_user,
     nbl_registry_token = var.nbl_registry_token,
+    # route dockerd's agent pull through mitmproxy when enabled; empty otherwise
+    proxy_url   = var.enable_mitmproxy ? "http://testuser:passw0rd@${aws_instance.mitmproxy_instance[0].private_ip}:8080" : ""
+    ca_cert_pem = var.enable_mitmproxy ? tls_self_signed_cert.mitmproxy_ca[0].cert_pem : ""
     orb_yaml = templatefile("${path.module}/orb.yaml.tpl", {
       public_subnet    = module.vpc.public_subnet_objects[0].cidr_block
       c8kv_ip          = aws_instance.c8kv_instance[0].private_ip
