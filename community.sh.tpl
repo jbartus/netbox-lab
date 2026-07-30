@@ -26,7 +26,7 @@ dnf install -y python3.12 python3.12-devel
 mkdir -p /opt/netbox/
 cd /opt/netbox/
 dnf install -y git
-TAG=$(basename "$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/netbox-community/netbox/releases/latest)")
+TAG=$(basename "$(curl -fsSLI -o /dev/null -w '%%{url_effective}' https://github.com/netbox-community/netbox/releases/latest)")
 git clone --depth 1 --branch "$TAG" https://github.com/netbox-community/netbox.git .
 groupadd --system netbox
 adduser --system -g netbox netbox
@@ -59,10 +59,11 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/net
 dnf install -y nginx
 head -n -7 /opt/netbox/contrib/nginx.conf > /etc/nginx/conf.d/netbox.conf
 TOKEN="$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60" -s)"
-PUBIP="$(curl -H "X-aws-ec2-metadata-token: ${TOKEN}" 'http://169.254.169.254/latest/meta-data/public-ipv4' -s)"
-sed -i "s/netbox.example.com/${PUBIP}/" /etc/nginx/conf.d/netbox.conf
+PUBIP="$(curl -H "X-aws-ec2-metadata-token: $${TOKEN}" 'http://169.254.169.254/latest/meta-data/public-ipv4' -s)"
+sed -i "s/netbox.example.com/$${PUBIP}/" /etc/nginx/conf.d/netbox.conf
 systemctl restart nginx
 
+%{ if enable_community_data ~}
 # demo data
 systemctl stop nginx
 systemctl stop netbox-rq
@@ -82,6 +83,7 @@ systemctl start redis6
 systemctl start netbox
 systemctl start netbox-rq
 systemctl start nginx
+%{ endif ~}
 
 # plugins
 source /opt/netbox/venv/bin/activate

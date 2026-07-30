@@ -1,5 +1,6 @@
 enable_docker               = false
 enable_community            = true
+enable_community_data       = false
 enable_ansible              = false
 enable_enterprise           = false
 enable_ent_ha               = false

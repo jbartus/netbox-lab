@@ -13,6 +13,11 @@ variable "enable_community" {
   default = false
 }
 
+variable "enable_community_data" {
+  type    = bool
+  default = false
+}
+
 variable "enable_ansible" {
   type    = bool
   default = false
