@@ -63,3 +63,33 @@ ${clear_deviations_sh}
 EOF
 
 chmod +x clear-deviations.sh
+
+%{ if enable_discovery ~}
+# mint a diode ingest credential and publish it to s3 for the orb host to fetch
+# this is the same call the Client Credentials > Add button makes in the web ui
+cat << 'EOF' > mint-diode-creds.py
+from netbox_diode_plugin.client import create_client
+creds = create_client(None, "orb1", "diode:ingest")
+print("CLIENT_ID", creds["client_id"])
+print("CLIENT_SECRET", creds["client_secret"])
+EOF
+
+# retry until netbox is up and diode's hydra is actually issuing tokens -- the
+# deployments report Available well before that. manage.py shell mixes a startup
+# banner into stdout, so keep the whole thing and pick the two lines we want out
+export KUBECONFIG=/var/lib/embedded-cluster/k0s/pki/admin.conf
+export PATH=/var/lib/embedded-cluster/bin:$PATH
+until MINT_OUTPUT=$(kubectl exec -i -n kotsadm deploy/netbox-netbox -c netbox -- /opt/netbox/netbox/manage.py shell < mint-diode-creds.py); do sleep 30; done
+CLIENT_ID=$(awk '/^CLIENT_ID/ {print $2}' <<< "$MINT_OUTPUT")
+CLIENT_SECRET=$(awk '/^CLIENT_SECRET/ {print $2}' <<< "$MINT_OUTPUT")
+NBE_IP=$(hostname -I | awk '{print $1}')
+
+# the orb host's scan.sh downloads this as its .env
+cat << EOF > diode.env
+DIODE_SERVER=grpc://$NBE_IP:80/diode
+DIODE_CLIENT_ID=$CLIENT_ID
+DIODE_CLIENT_SECRET=$CLIENT_SECRET
+EOF
+
+aws s3 cp diode.env "s3://${bucket}/diode.env"
+%{ endif ~}

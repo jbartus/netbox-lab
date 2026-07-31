@@ -54,6 +54,9 @@ DIODE_CLIENT_SECRET=
 EOF
 
 cat << 'EOF' > scan.sh
+# grab the diode credentials the enterprise host published
+aws s3 cp "s3://${bucket}/diode.env" .env
+
 # cleanup any previous runs
 docker stop orb 2>/dev/null || true
 docker rm orb 2>/dev/null || true
