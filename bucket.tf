@@ -3,13 +3,13 @@ resource "aws_s3_bucket" "files" {
   force_destroy = true
 }
 
-resource "aws_iam_role_policy" "s3_read" {
+resource "aws_iam_role_policy" "s3_rw" {
   role = aws_iam_role.ssm_instance_role.name
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = ["s3:GetObject", "s3:ListBucket"]
+      Action   = ["s3:GetObject", "s3:PutObject", "s3:ListBucket"]
       Resource = [aws_s3_bucket.files.arn, "${aws_s3_bucket.files.arn}/*"]
     }]
   })
