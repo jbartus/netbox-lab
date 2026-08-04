@@ -17,7 +17,6 @@ resource "aws_instance" "orb_instance" {
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.orb[0].id]
   user_data = templatefile("${path.module}/orb.sh.tpl", {
-    diode_server       = var.enable_enterprise ? aws_instance.enterprise_instance[0].private_ip : "",
     nbl_registry_user  = var.nbl_registry_user,
     nbl_registry_token = var.nbl_registry_token,
     # route dockerd's agent pull through mitmproxy when enabled; empty otherwise

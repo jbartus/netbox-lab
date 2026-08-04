@@ -43,19 +43,9 @@ TOKEN="$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-met
 LOCAL_IP="$(curl -H "X-aws-ec2-metadata-token: $${TOKEN}" 'http://169.254.169.254/latest/meta-data/local-ipv4' -s)"
 sed -i "s/VAULTIP/$${LOCAL_IP}/" orb.yaml
 
-cat << 'EOF' > .env
-%{ if diode_server != "" ~}
-DIODE_SERVER=grpc://${diode_server}:80/diode
-%{ else ~}
-DIODE_SERVER=
-%{ endif ~}
-DIODE_CLIENT_ID=
-DIODE_CLIENT_SECRET=
-EOF
-
 cat << 'EOF' > scan.sh
 # grab the diode credentials the enterprise host published
-aws s3 cp "s3://${bucket}/diode.env" .env
+[ -f .env ] || aws s3 cp "s3://${bucket}/diode.env" .env
 
 # cleanup any previous runs
 docker stop orb 2>/dev/null || true
