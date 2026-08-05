@@ -48,3 +48,7 @@ resource "aws_instance" "msft_dns_dhcp_instance" {
 output "msft_dns_dhcp_ssm_command" {
   value = var.enable_msft_dns_dhcp ? "aws ssm start-session --target ${aws_instance.msft_dns_dhcp_instance[0].id}" : null
 }
+
+output "msft_dns_dhcp_rdp_command" {
+  value = var.enable_msft_dns_dhcp ? "aws ssm start-session --target ${aws_instance.msft_dns_dhcp_instance[0].id} --document-name AWS-StartPortForwardingSession --parameters portNumber=3389,localPortNumber=13389" : null
+}
