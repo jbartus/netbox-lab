@@ -63,12 +63,6 @@ variable "enterprise_admin_password" {
   }
 }
 
-variable "enterprise_release_channel" {
-  type        = string
-  default     = "stable"
-  description = "Release channel for NetBox Enterprise."
-}
-
 variable "enable_discovery" {
   type    = bool
   default = false

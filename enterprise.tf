@@ -55,7 +55,6 @@ resource "aws_instance" "enterprise_instance" {
   user_data = templatefile("${path.module}/enterprise.sh.tpl", {
     enterprise_license_id       = var.enterprise_license_id,
     enterprise_console_password = var.enterprise_console_password,
-    enterprise_release_channel  = var.enterprise_release_channel,
     config_yaml = templatefile("${path.module}/enterprise-config.yaml.tpl", {
       enterprise_admin_password = var.enterprise_admin_password
       ca_cert_pem               = local.mitmproxy_ca_cert
