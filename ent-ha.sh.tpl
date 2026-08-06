@@ -5,9 +5,10 @@ set -xeuo pipefail
 cd /root
 
 # install netbox enterprise
-curl -f "https://app.enterprise.netboxlabs.com/embedded/netbox-enterprise/${enterprise_release_channel}" -H "Authorization: ${enterprise_license_id}" -o netbox-enterprise-${enterprise_release_channel}.tgz -s
+# note: the channel segment in the url is ignored, only the server-side setting matters
+curl -f "https://app.enterprise.netboxlabs.com/embedded/netbox-enterprise/ignored" -H "Authorization: ${enterprise_license_id}" -o netbox-enterprise.tgz -s
 
-tar zxvf netbox-enterprise-${enterprise_release_channel}.tgz
+tar zxvf netbox-enterprise.tgz
 
 cat << 'EOF' > config.yaml
 ${config_yaml}

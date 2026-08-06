@@ -1,21 +1,30 @@
-resource "aws_db_subnet_group" "ent_ha_pg" {
-  count       = var.enable_ent_ha ? 1 : 0
-  name_prefix = "postgres-subnet-group"
-  subnet_ids  = module.vpc.private_subnets
-}
+# --- data tier ------------------------------------------------------------
+# external postgres and redis. a multi-node install requires both
 
-resource "aws_security_group" "ent_ha_pg" {
+# one security group for the whole data tier, both services live in the private
+# subnets and are only reachable from inside the vpc regardless of these rules.
+resource "aws_security_group" "ent_ha_data" {
   count  = var.enable_ent_ha ? 1 : 0
   vpc_id = module.vpc.vpc_id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_pg_allow_psql_in" {
-  count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_pg[0].id
+resource "aws_vpc_security_group_ingress_rule" "ent_ha_data" {
+  for_each = var.enable_ent_ha ? {
+    postgres = 5432
+    redis    = 6379
+  } : {}
+
+  security_group_id = aws_security_group.ent_ha_data[0].id
   cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 5432
-  to_port           = 5432
+  from_port         = each.value
+  to_port           = each.value
   ip_protocol       = "tcp"
+}
+
+resource "aws_db_subnet_group" "ent_ha_pg" {
+  count       = var.enable_ent_ha ? 1 : 0
+  name_prefix = "postgres-subnet-group"
+  subnet_ids  = module.vpc.private_subnets
 }
 
 resource "aws_db_instance" "ent_ha_pg" {
@@ -27,7 +36,7 @@ resource "aws_db_instance" "ent_ha_pg" {
   db_name                = each.key
   allocated_storage      = 20
   db_subnet_group_name   = aws_db_subnet_group.ent_ha_pg[0].name
-  vpc_security_group_ids = [aws_security_group.ent_ha_pg[0].id]
+  vpc_security_group_ids = [aws_security_group.ent_ha_data[0].id]
   skip_final_snapshot    = true
 }
 
@@ -35,20 +44,6 @@ resource "aws_elasticache_subnet_group" "ent_ha_redis" {
   count      = var.enable_ent_ha ? 1 : 0
   name       = "ent-ha-redis-subnet-group-${data.external.whoami.result.username}"
   subnet_ids = module.vpc.private_subnets
-}
-
-resource "aws_security_group" "ent_ha_redis" {
-  count  = var.enable_ent_ha ? 1 : 0
-  vpc_id = module.vpc.vpc_id
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_redis_allow_in" {
-  count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_redis[0].id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 6379
-  to_port           = 6379
-  ip_protocol       = "tcp"
 }
 
 resource "aws_elasticache_cluster" "ent_ha_redis" {
@@ -60,50 +55,73 @@ resource "aws_elasticache_cluster" "ent_ha_redis" {
   parameter_group_name = "default.redis7"
   port                 = 6379
   subnet_group_name    = aws_elasticache_subnet_group.ent_ha_redis[0].name
-  security_group_ids   = [aws_security_group.ent_ha_redis[0].id]
+  security_group_ids   = [aws_security_group.ent_ha_data[0].id]
 }
 
-resource "aws_security_group" "ent_ha_lab" {
+# --- object storage -------------------------------------------------------
+# netbox's file storage. also required for multi-node. netbox is configured with
+# static credentials, and only an iam user can hold those, hence the user.
+
+resource "aws_s3_bucket" "ent_ha_files" {
+  count         = var.enable_ent_ha ? 1 : 0
+  bucket_prefix = "ent-ha-files-"
+  force_destroy = true
+}
+
+resource "aws_iam_user" "ent_ha_s3" {
+  count = var.enable_ent_ha ? 1 : 0
+  name  = "ent-ha-s3-user-${data.external.whoami.result.username}"
+}
+
+resource "aws_iam_user_policy" "ent_ha_s3_rw" {
+  count = var.enable_ent_ha ? 1 : 0
+  user  = aws_iam_user.ent_ha_s3[0].name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket"]
+      Resource = [aws_s3_bucket.ent_ha_files[0].arn, "${aws_s3_bucket.ent_ha_files[0].arn}/*"]
+    }]
+  })
+}
+
+resource "aws_iam_access_key" "ent_ha_s3" {
+  count = var.enable_ent_ha ? 1 : 0
+  user  = aws_iam_user.ent_ha_s3[0].name
+}
+
+# --- node network ---------------------------------------------------------
+
+resource "aws_security_group" "ent_ha_nodes" {
   count  = var.enable_ent_ha ? 1 : 0
   vpc_id = module.vpc.vpc_id
 }
 
-resource "aws_vpc_security_group_egress_rule" "ent_ha_allow_all_out" {
+resource "aws_vpc_security_group_egress_rule" "ent_ha_nodes_egress" {
   count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_lab[0].id
+  security_group_id = aws_security_group.ent_ha_nodes[0].id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_https_in" {
-  count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_lab[0].id
+# reachable from outside the vpc. 80 is both the nlb target port and how you hit
+# a node directly, bypassing the load balancer, when troubleshooting ha.
+resource "aws_vpc_security_group_ingress_rule" "ent_ha_public" {
+  for_each = var.enable_ent_ha ? {
+    https   = 443
+    grpc    = 80
+    console = 30000
+  } : {}
+
+  security_group_id = aws_security_group.ent_ha_nodes[0].id
   cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 443
-  to_port           = 443
+  from_port         = each.value
+  to_port           = each.value
   ip_protocol       = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_grpc_in" {
-  count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_lab[0].id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 80
-  to_port           = 80
-  ip_protocol       = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_console_in" {
-  count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_lab[0].id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 30000
-  to_port           = 30000
-  ip_protocol       = "tcp"
-}
-
-# every port the nodes need between themselves. deliberately explicit rather than
-# allow-all so that a new port dependency in a future NBE release breaks the lab.
+# every port the nodes need between themselves. deliberately explicit to validate docs.
 resource "aws_vpc_security_group_ingress_rule" "ent_ha_cluster" {
   for_each = var.enable_ent_ha ? {
     apiserver = { from = 6443, to = 6443, proto = "tcp" }
@@ -114,23 +132,26 @@ resource "aws_vpc_security_group_ingress_rule" "ent_ha_cluster" {
     bgp       = { from = 179, to = 179, proto = "tcp" }
   } : {}
 
-  security_group_id            = aws_security_group.ent_ha_lab[0].id
-  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
+  security_group_id            = aws_security_group.ent_ha_nodes[0].id
+  referenced_security_group_id = aws_security_group.ent_ha_nodes[0].id
   from_port                    = each.value.from
   to_port                      = each.value.to
   ip_protocol                  = each.value.proto
 }
+
+# --- nodes ----------------------------------------------------------------
+# node1 installs and publishes join commands to s3. node2 and node3 wait on the
+# previous node's marker file, join, then publish their own.
 
 resource "aws_instance" "ent_ha_node1" {
   count                  = var.enable_ent_ha ? 1 : 0
   ami                    = data.aws_ssm_parameter.al2023_ami_x86-64.value
   instance_type          = "m7i.2xlarge"
   subnet_id              = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [aws_security_group.ent_ha_lab[0].id]
+  vpc_security_group_ids = [aws_security_group.ent_ha_nodes[0].id]
   user_data = templatefile("${path.module}/ent-ha.sh.tpl", {
     enterprise_license_id       = var.enterprise_license_id,
     enterprise_console_password = var.enterprise_console_password,
-    enterprise_release_channel  = var.enterprise_release_channel,
     config_yaml = templatefile("${path.module}/ent-ha-config.yaml.tpl", {
       admin_password = var.enterprise_admin_password,
       pg_password    = var.postgres_password,
@@ -169,7 +190,7 @@ resource "aws_instance" "ent_ha_node" {
   ami                         = data.aws_ssm_parameter.al2023_ami_x86-64.value
   instance_type               = "m7i.2xlarge"
   subnet_id                   = module.vpc.public_subnets[0]
-  vpc_security_group_ids      = [aws_security_group.ent_ha_lab[0].id]
+  vpc_security_group_ids      = [aws_security_group.ent_ha_nodes[0].id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
   user_data = templatefile("${path.module}/ent-ha-join.sh.tpl", {
@@ -190,61 +211,11 @@ resource "aws_instance" "ent_ha_node" {
   }
 }
 
-resource "aws_s3_bucket" "ent_ha_files" {
-  count         = var.enable_ent_ha ? 1 : 0
-  bucket_prefix = "ent-ha-files-"
-  force_destroy = true
-}
-
-resource "aws_iam_user" "ent_ha_s3" {
-  count = var.enable_ent_ha ? 1 : 0
-  name  = "ent-ha-s3-user-${data.external.whoami.result.username}"
-}
-
-resource "aws_iam_user_policy" "ent_ha_s3_rw" {
-  count = var.enable_ent_ha ? 1 : 0
-  user  = aws_iam_user.ent_ha_s3[0].name
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket"]
-      Resource = [aws_s3_bucket.ent_ha_files[0].arn, "${aws_s3_bucket.ent_ha_files[0].arn}/*"]
-    }]
-  })
-}
-
-resource "aws_iam_access_key" "ent_ha_s3" {
-  count = var.enable_ent_ha ? 1 : 0
-  user  = aws_iam_user.ent_ha_s3[0].name
-}
-
-resource "aws_security_group" "ent_ha_nlb" {
-  count  = var.enable_ent_ha ? 1 : 0
-  vpc_id = module.vpc.vpc_id
-}
-
-resource "aws_vpc_security_group_egress_rule" "ent_ha_nlb_allow_all_out" {
-  count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_nlb[0].id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_nlb_allow_http_in" {
-  count             = var.enable_ent_ha ? 1 : 0
-  security_group_id = aws_security_group.ent_ha_nlb[0].id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 80
-  to_port           = 80
-  ip_protocol       = "tcp"
-}
-
+# --- load balancer --------------------------------------------------------
 resource "aws_lb" "ent_ha" {
   count              = var.enable_ent_ha ? 1 : 0
   internal           = false
   load_balancer_type = "network"
-  security_groups    = [aws_security_group.ent_ha_nlb[0].id]
   subnets            = module.vpc.public_subnets
 }
 
@@ -295,6 +266,8 @@ resource "aws_lb_listener" "ent_ha_http" {
   }
 }
 
+# --- outputs --------------------------------------------------------------
+
 output "ent_ha_nlb_url" {
   value = var.enable_ent_ha ? "http://${aws_lb.ent_ha[0].dns_name}" : null
 }
@@ -313,4 +286,12 @@ output "ent_ha_node3_ssm_command" {
 
 output "ent_ha_node1_console_url" {
   value = var.enable_ent_ha ? "https://${aws_instance.ent_ha_node1[0].public_ip}:30000" : null
+}
+
+output "ent_ha_node2_console_url" {
+  value = var.enable_ent_ha ? "https://${aws_instance.ent_ha_node["node2"].public_ip}:30000" : null
+}
+
+output "ent_ha_node3_console_url" {
+  value = var.enable_ent_ha ? "https://${aws_instance.ent_ha_node["node3"].public_ip}:30000" : null
 }
