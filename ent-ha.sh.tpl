@@ -17,9 +17,11 @@ EOF
 
 sleep 360
 
-mkdir joincmds
-./netbox-enterprise join print-command > joincmds/node2.sh
-./netbox-enterprise join print-command > joincmds/node3.sh
-sed -i '/netbox-enterprise join /s/$/ --yes/' joincmds/node2.sh joincmds/node3.sh
-cd joincmds
-nohup python3 -m http.server 30001 &>/dev/null &
+./netbox-enterprise join print-command > node2.sh
+aws s3 cp node2.sh s3://${bucket}/
+
+./netbox-enterprise join print-command > node3.sh
+aws s3 cp node3.sh s3://${bucket}/
+
+touch node1.done
+aws s3 cp node1.done s3://${bucket}/

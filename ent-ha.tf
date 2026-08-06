@@ -106,7 +106,6 @@ resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_console_in" {
 # allow-all so that a new port dependency in a future NBE release breaks the lab.
 resource "aws_vpc_security_group_ingress_rule" "ent_ha_cluster" {
   for_each = var.enable_ent_ha ? {
-    joincmd   = { from = 30001, to = 30001, proto = "tcp" }
     apiserver = { from = 6443, to = 6443, proto = "tcp" }
     k0s       = { from = 9443, to = 9443, proto = "tcp" }
     etcd      = { from = 2379, to = 2380, proto = "tcp" }
@@ -144,6 +143,7 @@ resource "aws_instance" "ent_ha_node1" {
       s3_access_key  = aws_iam_access_key.ent_ha_s3[0].secret,
       aws_region     = aws_s3_bucket.ent_ha_files[0].region
     })
+    bucket = aws_s3_bucket.files.id
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
@@ -160,16 +160,22 @@ resource "aws_instance" "ent_ha_node1" {
   }
 }
 
-resource "aws_instance" "ent_ha_node2" {
-  count                       = var.enable_ent_ha ? 1 : 0
+resource "aws_instance" "ent_ha_node" {
+  for_each = var.enable_ent_ha ? {
+    node2 = { wait_for = "node1.done" }
+    node3 = { wait_for = "node2.done" }
+  } : {}
+
   ami                         = data.aws_ssm_parameter.al2023_ami_x86-64.value
   instance_type               = "m7i.2xlarge"
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.ent_ha_lab[0].id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
-  user_data = templatefile("${path.module}/ent-ha-node2.sh.tpl", {
-    node1_ip = aws_instance.ent_ha_node1[0].private_ip
+  user_data = templatefile("${path.module}/ent-ha-join.sh.tpl", {
+    bucket   = aws_s3_bucket.files.id
+    node     = each.key
+    wait_for = each.value.wait_for
   })
 
   root_block_device {
@@ -180,31 +186,7 @@ resource "aws_instance" "ent_ha_node2" {
   }
 
   tags = {
-    Name = "ent_ha_node2"
-  }
-}
-
-resource "aws_instance" "ent_ha_node3" {
-  count                       = var.enable_ent_ha ? 1 : 0
-  ami                         = data.aws_ssm_parameter.al2023_ami_x86-64.value
-  instance_type               = "m7i.2xlarge"
-  subnet_id                   = module.vpc.public_subnets[0]
-  vpc_security_group_ids      = [aws_security_group.ent_ha_lab[0].id]
-  associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
-  user_data = templatefile("${path.module}/ent-ha-node3.sh.tpl", {
-    node1_ip = aws_instance.ent_ha_node1[0].private_ip
-  })
-
-  root_block_device {
-    volume_size = 100
-    volume_type = "gp3"
-    iops        = 6000
-    throughput  = 250
-  }
-
-  tags = {
-    Name = "ent_ha_node3"
+    Name = "ent_ha_${each.key}"
   }
 }
 
@@ -296,17 +278,10 @@ resource "aws_lb_target_group_attachment" "ent_ha_node1" {
   port             = 80
 }
 
-resource "aws_lb_target_group_attachment" "ent_ha_node2" {
-  count            = var.enable_ent_ha ? 1 : 0
+resource "aws_lb_target_group_attachment" "ent_ha_node" {
+  for_each         = aws_instance.ent_ha_node
   target_group_arn = aws_lb_target_group.ent_ha[0].arn
-  target_id        = aws_instance.ent_ha_node2[0].id
-  port             = 80
-}
-
-resource "aws_lb_target_group_attachment" "ent_ha_node3" {
-  count            = var.enable_ent_ha ? 1 : 0
-  target_group_arn = aws_lb_target_group.ent_ha[0].arn
-  target_id        = aws_instance.ent_ha_node3[0].id
+  target_id        = each.value.id
   port             = 80
 }
 
@@ -331,11 +306,11 @@ output "ent_ha_node1_ssm_command" {
 }
 
 output "ent_ha_node2_ssm_command" {
-  value = var.enable_ent_ha ? "aws ssm start-session --target ${aws_instance.ent_ha_node2[0].id}" : null
+  value = var.enable_ent_ha ? "aws ssm start-session --target ${aws_instance.ent_ha_node["node2"].id}" : null
 }
 
 output "ent_ha_node3_ssm_command" {
-  value = var.enable_ent_ha ? "aws ssm start-session --target ${aws_instance.ent_ha_node3[0].id}" : null
+  value = var.enable_ent_ha ? "aws ssm start-session --target ${aws_instance.ent_ha_node["node3"].id}" : null
 }
 
 output "ent_ha_node1_console_url" {
