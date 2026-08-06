@@ -102,67 +102,24 @@ resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_console_in" {
   ip_protocol       = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_joincmd_in" {
-  count                        = var.enable_ent_ha ? 1 : 0
-  security_group_id            = aws_security_group.ent_ha_lab[0].id
-  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
-  from_port                    = 30001
-  to_port                      = 30001
-  ip_protocol                  = "tcp"
-}
+# every port the nodes need between themselves. deliberately explicit rather than
+# allow-all so that a new port dependency in a future NBE release breaks the lab.
+resource "aws_vpc_security_group_ingress_rule" "ent_ha_cluster" {
+  for_each = var.enable_ent_ha ? {
+    joincmd   = { from = 30001, to = 30001, proto = "tcp" }
+    apiserver = { from = 6443, to = 6443, proto = "tcp" }
+    k0s       = { from = 9443, to = 9443, proto = "tcp" }
+    etcd      = { from = 2379, to = 2380, proto = "tcp" }
+    kubelet   = { from = 10250, to = 10250, proto = "tcp" }
+    vxlan     = { from = 4789, to = 4789, proto = "udp" }
+    bgp       = { from = 179, to = 179, proto = "tcp" }
+  } : {}
 
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_apiserver_in" {
-  count                        = var.enable_ent_ha ? 1 : 0
   security_group_id            = aws_security_group.ent_ha_lab[0].id
   referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
-  from_port                    = 6443
-  to_port                      = 6443
-  ip_protocol                  = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_k0s_in" {
-  count                        = var.enable_ent_ha ? 1 : 0
-  security_group_id            = aws_security_group.ent_ha_lab[0].id
-  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
-  from_port                    = 9443
-  to_port                      = 9443
-  ip_protocol                  = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_etcd_in" {
-  count                        = var.enable_ent_ha ? 1 : 0
-  security_group_id            = aws_security_group.ent_ha_lab[0].id
-  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
-  from_port                    = 2379
-  to_port                      = 2380
-  ip_protocol                  = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_kubelet_in" {
-  count                        = var.enable_ent_ha ? 1 : 0
-  security_group_id            = aws_security_group.ent_ha_lab[0].id
-  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
-  from_port                    = 10250
-  to_port                      = 10250
-  ip_protocol                  = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_vxlan_in" {
-  count                        = var.enable_ent_ha ? 1 : 0
-  security_group_id            = aws_security_group.ent_ha_lab[0].id
-  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
-  from_port                    = 4789
-  to_port                      = 4789
-  ip_protocol                  = "udp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ent_ha_allow_bgp_in" {
-  count                        = var.enable_ent_ha ? 1 : 0
-  security_group_id            = aws_security_group.ent_ha_lab[0].id
-  referenced_security_group_id = aws_security_group.ent_ha_lab[0].id
-  from_port                    = 179
-  to_port                      = 179
-  ip_protocol                  = "tcp"
+  from_port                    = each.value.from
+  to_port                      = each.value.to
+  ip_protocol                  = each.value.proto
 }
 
 resource "aws_instance" "ent_ha_node1" {
