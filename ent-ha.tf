@@ -18,39 +18,13 @@ resource "aws_vpc_security_group_ingress_rule" "ent_ha_pg_allow_psql_in" {
   ip_protocol       = "tcp"
 }
 
-resource "aws_db_instance" "netbox" {
-  count                  = var.enable_ent_ha ? 1 : 0
+resource "aws_db_instance" "ent_ha_pg" {
+  for_each               = toset(var.enable_ent_ha ? ["netbox", "diode", "hydra"] : [])
   engine                 = "postgres"
   instance_class         = "db.t4g.medium"
-  username               = "netbox"
+  username               = each.key
   password               = var.postgres_password
-  db_name                = "netbox"
-  allocated_storage      = 20
-  db_subnet_group_name   = aws_db_subnet_group.ent_ha_pg[0].name
-  vpc_security_group_ids = [aws_security_group.ent_ha_pg[0].id]
-  skip_final_snapshot    = true
-}
-
-resource "aws_db_instance" "diode" {
-  count                  = var.enable_ent_ha ? 1 : 0
-  engine                 = "postgres"
-  instance_class         = "db.t4g.medium"
-  username               = "diode"
-  password               = var.postgres_password
-  db_name                = "diode"
-  allocated_storage      = 20
-  db_subnet_group_name   = aws_db_subnet_group.ent_ha_pg[0].name
-  vpc_security_group_ids = [aws_security_group.ent_ha_pg[0].id]
-  skip_final_snapshot    = true
-}
-
-resource "aws_db_instance" "hydra" {
-  count                  = var.enable_ent_ha ? 1 : 0
-  engine                 = "postgres"
-  instance_class         = "db.t4g.medium"
-  username               = "hydra"
-  password               = var.postgres_password
-  db_name                = "hydra"
+  db_name                = each.key
   allocated_storage      = 20
   db_subnet_group_name   = aws_db_subnet_group.ent_ha_pg[0].name
   vpc_security_group_ids = [aws_security_group.ent_ha_pg[0].id]
@@ -204,9 +178,9 @@ resource "aws_instance" "ent_ha_node1" {
     config_yaml = templatefile("${path.module}/ent-ha-config.yaml.tpl", {
       admin_password = var.enterprise_admin_password,
       pg_password    = var.postgres_password,
-      netbox_pg_host = aws_db_instance.netbox[0].address,
-      diode_pg_host  = aws_db_instance.diode[0].address,
-      hydra_pg_host  = aws_db_instance.hydra[0].address,
+      netbox_pg_host = aws_db_instance.ent_ha_pg["netbox"].address,
+      diode_pg_host  = aws_db_instance.ent_ha_pg["diode"].address,
+      hydra_pg_host  = aws_db_instance.ent_ha_pg["hydra"].address,
       redis_host     = aws_elasticache_cluster.ent_ha_redis[0].cache_nodes[0].address,
       s3_bucket_name = aws_s3_bucket.ent_ha_files[0].id,
       s3_key_id      = aws_iam_access_key.ent_ha_s3[0].id,
