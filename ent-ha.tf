@@ -33,7 +33,7 @@ resource "aws_db_instance" "ent_ha_pg" {
 
 resource "aws_elasticache_subnet_group" "ent_ha_redis" {
   count      = var.enable_ent_ha ? 1 : 0
-  name       = "ent-ha-redis-subnet-group"
+  name       = "ent-ha-redis-subnet-group-${data.external.whoami.result.username}"
   subnet_ids = module.vpc.private_subnets
 }
 
@@ -53,7 +53,7 @@ resource "aws_vpc_security_group_ingress_rule" "ent_ha_redis_allow_in" {
 
 resource "aws_elasticache_cluster" "ent_ha_redis" {
   count                = var.enable_ent_ha ? 1 : 0
-  cluster_id           = "ent-ha-redis"
+  cluster_id           = "ent-ha-redis-${data.external.whoami.result.username}"
   engine               = "redis"
   node_type            = "cache.t4g.medium"
   num_cache_nodes      = 1
@@ -198,7 +198,7 @@ resource "aws_s3_bucket" "ent_ha_files" {
 
 resource "aws_iam_user" "ent_ha_s3" {
   count = var.enable_ent_ha ? 1 : 0
-  name  = "ent-ha-s3-user"
+  name  = "ent-ha-s3-user-${data.external.whoami.result.username}"
 }
 
 resource "aws_iam_user_policy" "ent_ha_s3_rw" {
@@ -242,7 +242,6 @@ resource "aws_vpc_security_group_ingress_rule" "ent_ha_nlb_allow_http_in" {
 
 resource "aws_lb" "ent_ha" {
   count              = var.enable_ent_ha ? 1 : 0
-  name               = "ent-ha-nlb"
   internal           = false
   load_balancer_type = "network"
   security_groups    = [aws_security_group.ent_ha_nlb[0].id]
@@ -251,7 +250,6 @@ resource "aws_lb" "ent_ha" {
 
 resource "aws_lb_target_group" "ent_ha" {
   count    = var.enable_ent_ha ? 1 : 0
-  name     = "ent-ha-tg"
   port     = 80
   protocol = "TCP"
   vpc_id   = module.vpc.vpc_id
