@@ -20,6 +20,21 @@ data "netbox_device_type" "n93180yc" {
   depends_on = [terraform_data.ndx_import]
 }
 
+data "netbox_device_type" "n9336c" {
+  slug       = "cisco-n9k-c9336c-fx2"
+  depends_on = [terraform_data.ndx_import]
+}
+
+data "netbox_device_type" "c9300" {
+  slug       = "cisco-c9300-48t"
+  depends_on = [terraform_data.ndx_import]
+}
+
+data "netbox_device_type" "mx204" {
+  slug       = "juniper-mx204"
+  depends_on = [terraform_data.ndx_import]
+}
+
 resource "netbox_device_role" "server" {
   name      = "server"
   color_hex = "00ff00"
@@ -33,6 +48,21 @@ resource "netbox_device_role" "pdu" {
 resource "netbox_device_role" "switch" {
   name      = "switch"
   color_hex = "2196f3"
+}
+
+resource "netbox_device_role" "router" {
+  name      = "router"
+  color_hex = "9c27b0"
+}
+
+resource "netbox_device_role" "spine" {
+  name      = "spine"
+  color_hex = "3f51b5"
+}
+
+resource "netbox_device_role" "oob" {
+  name      = "oob"
+  color_hex = "607d8b"
 }
 
 resource "netbox_device" "ewr_app" {
@@ -87,6 +117,57 @@ resource "netbox_device" "ewr_switch" {
   status         = "active"
 }
 
+resource "netbox_device" "ewr_rtr" {
+  for_each = {
+    rtr1 = netbox_rack.mmr2_rack1.id
+    rtr2 = netbox_rack.mmr2_rack2.id
+  }
+  name           = each.key
+  rack_id        = each.value
+  device_type_id = data.netbox_device_type.mx204.id
+  role_id        = netbox_device_role.router.id
+  site_id        = netbox_site.ewr.id
+  location_id    = netbox_location.mmr2.id
+  rack_face      = "front"
+  rack_position  = 44
+  tenant_id      = netbox_tenant.vaulter.id
+  status         = "active"
+}
+
+resource "netbox_device" "ewr_spine" {
+  for_each = {
+    spine1 = netbox_rack.mmr2_rack1.id
+    spine2 = netbox_rack.mmr2_rack2.id
+  }
+  name           = each.key
+  rack_id        = each.value
+  device_type_id = data.netbox_device_type.n9336c.id
+  role_id        = netbox_device_role.spine.id
+  site_id        = netbox_site.ewr.id
+  location_id    = netbox_location.mmr2.id
+  rack_face      = "front"
+  rack_position  = 42
+  tenant_id      = netbox_tenant.vaulter.id
+  status         = "active"
+}
+
+resource "netbox_device" "ewr_oob" {
+  for_each = {
+    oob1 = netbox_rack.mmr2_rack1.id
+    oob2 = netbox_rack.mmr2_rack2.id
+  }
+  name           = each.key
+  rack_id        = each.value
+  device_type_id = data.netbox_device_type.c9300.id
+  role_id        = netbox_device_role.oob.id
+  site_id        = netbox_site.ewr.id
+  location_id    = netbox_location.mmr2.id
+  rack_face      = "front"
+  rack_position  = 40
+  tenant_id      = netbox_tenant.vaulter.id
+  status         = "active"
+}
+
 resource "netbox_device" "jfk_app" {
   count          = 16
   name           = format("app%02d", count.index + 1)
@@ -110,6 +191,57 @@ resource "netbox_device" "jfk_switch" {
   rack_id        = each.value
   device_type_id = data.netbox_device_type.n93180yc.id
   role_id        = netbox_device_role.switch.id
+  site_id        = netbox_site.jfk.id
+  location_id    = netbox_location.floor30.id
+  rack_face      = "front"
+  rack_position  = 40
+  tenant_id      = netbox_tenant.vaulter.id
+  status         = "active"
+}
+
+resource "netbox_device" "jfk_rtr" {
+  for_each = {
+    rtr1 = netbox_rack.floor30_rack1.id
+    rtr2 = netbox_rack.floor30_rack2.id
+  }
+  name           = each.key
+  rack_id        = each.value
+  device_type_id = data.netbox_device_type.mx204.id
+  role_id        = netbox_device_role.router.id
+  site_id        = netbox_site.jfk.id
+  location_id    = netbox_location.floor30.id
+  rack_face      = "front"
+  rack_position  = 44
+  tenant_id      = netbox_tenant.vaulter.id
+  status         = "active"
+}
+
+resource "netbox_device" "jfk_spine" {
+  for_each = {
+    spine1 = netbox_rack.floor30_rack1.id
+    spine2 = netbox_rack.floor30_rack2.id
+  }
+  name           = each.key
+  rack_id        = each.value
+  device_type_id = data.netbox_device_type.n9336c.id
+  role_id        = netbox_device_role.spine.id
+  site_id        = netbox_site.jfk.id
+  location_id    = netbox_location.floor30.id
+  rack_face      = "front"
+  rack_position  = 42
+  tenant_id      = netbox_tenant.vaulter.id
+  status         = "active"
+}
+
+resource "netbox_device" "jfk_oob" {
+  for_each = {
+    oob1 = netbox_rack.floor30_rack1.id
+    oob2 = netbox_rack.floor30_rack2.id
+  }
+  name           = each.key
+  rack_id        = each.value
+  device_type_id = data.netbox_device_type.c9300.id
+  role_id        = netbox_device_role.oob.id
   site_id        = netbox_site.jfk.id
   location_id    = netbox_location.floor30.id
   rack_face      = "front"

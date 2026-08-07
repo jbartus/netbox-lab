@@ -10,13 +10,20 @@ resource "netbox_manufacturer" "hpe" {
   name = "HPE"
 }
 
+resource "netbox_manufacturer" "juniper" {
+  name = "Juniper"
+}
+
 # things to import from NDX
 locals {
   ndx_ids = [
+    "cisco/cisco-c9300-48t",
     "cisco/cisco-n9k-c93180yc-fx3",
+    "cisco/cisco-n9k-c9336c-fx2",
     "cisco/NXA-PAC-650W-PE",
     "hpe/hpe-proliant-dl360-gen11",
     "hpe/P38995-B21",
+    "juniper/juniper-mx204",
     "schneider-electric/apc-ar3355b2",
     "schneider-electric/apc-ap8965",
   ]
@@ -26,7 +33,12 @@ locals {
 resource "terraform_data" "ndx_import" {
   input            = local.ndx_ids
   triggers_replace = local.ndx_ids
-  depends_on       = [netbox_manufacturer.apc, netbox_manufacturer.cisco, netbox_manufacturer.hpe]
+  depends_on = [
+    netbox_manufacturer.apc,
+    netbox_manufacturer.cisco,
+    netbox_manufacturer.hpe,
+    netbox_manufacturer.juniper,
+  ]
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
