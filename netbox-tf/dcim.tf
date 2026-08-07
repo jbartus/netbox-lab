@@ -13,6 +13,8 @@ resource "netbox_manufacturer" "hpe" {
 # things to import from NDX
 locals {
   ndx_ids = [
+    "cisco/cisco-n9k-c93180yc-fx3",
+    "cisco/NXA-PAC-650W-PE",
     "hpe/hpe-proliant-dl360-gen11",
     "hpe/P38995-B21",
     "schneider-electric/apc-ar3355b2",
@@ -24,17 +26,35 @@ locals {
 resource "terraform_data" "ndx_import" {
   input            = local.ndx_ids
   triggers_replace = local.ndx_ids
-  depends_on       = [netbox_manufacturer.apc, netbox_manufacturer.hpe]
+  depends_on       = [netbox_manufacturer.apc, netbox_manufacturer.cisco, netbox_manufacturer.hpe]
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command     = <<-EOT
       set -euo pipefail
-      curl -sS --fail-with-body -X POST "${var.netbox_server_url}/api/plugins/ndx/import/" \
-        -H "Authorization: Token ${var.netbox_api_token}" \
-        -H "Content-Type: application/json" \
-        -d '${jsonencode({ ndx_ids = self.input })}' \
-      | jq -e 'all(.results[]; .success)' >/dev/null
+      api() {
+        curl -sS --fail-with-body \
+          -H "Authorization: Token ${var.netbox_api_token}" \
+          -H "Content-Type: application/json" "$@"
+      }
+      base="${var.netbox_server_url}/api/plugins/ndx"
+      ids='${jsonencode(self.input)}'
+      resp=$(api -X POST "$base/import/" -d '${jsonencode({ ndx_ids = self.input })}')
+
+      # small batches import inline and return results, bigger ones queue and return 202
+      if jq -e 'has("results")' <<<"$resp" >/dev/null; then
+        jq -e 'all(.results[]; .success)' <<<"$resp" >/dev/null
+      else
+        for _ in $(seq 60); do
+          have=$(api "$base/import-records/?limit=0" | jq -c '[.results[].ndx_id]')
+          if [ "$(jq -n --argjson w "$ids" --argjson h "$have" '$w - $h | length')" = 0 ]; then
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "ndx import still incomplete after 120s" >&2
+        exit 1
+      fi
     EOT
   }
 }

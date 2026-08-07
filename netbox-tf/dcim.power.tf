@@ -95,12 +95,26 @@ resource "netbox_power_feed" "jfk_b" {
   max_percent_utilization = 80
 }
 
-# the dl360 has no power ports of its own, they arrive with the psu modules. module bays
-# are auto-created from the device type template so terraform never learns their ids,
-# and the provider has no module bay data source - hence the curl.
+# neither the dl360 nor the nexus has power ports of its own, they arrive with the psu
+# modules. module bays are auto-created from the device type template so terraform never
+# learns their ids, and the provider has no module bay data source - hence the curl.
 resource "terraform_data" "psu_modules" {
-  input            = concat(netbox_device.ewr_app[*].id, netbox_device.jfk_app[*].id)
-  triggers_replace = concat(netbox_device.ewr_app[*].id, netbox_device.jfk_app[*].id)
+  for_each = {
+    server = {
+      part    = "P38995-B21"
+      draw    = 300
+      bays    = "&name=PSU1&name=PSU2"
+      devices = concat(netbox_device.ewr_app[*].id, netbox_device.jfk_app[*].id)
+    }
+    switch = {
+      part    = "NXA-PAC-650W-PE"
+      draw    = 350
+      bays    = "&name=PS1&name=PS2"
+      devices = concat([for d in netbox_device.ewr_switch : d.id], [for d in netbox_device.jfk_switch : d.id])
+    }
+  }
+  input            = each.value
+  triggers_replace = each.value
   depends_on       = [terraform_data.ndx_import]
 
   provisioner "local-exec" {
@@ -113,12 +127,12 @@ resource "terraform_data" "psu_modules" {
           -H "Content-Type: application/json" "$@"
       }
       base="${var.netbox_server_url}/api/dcim"
-      mt=$(api "$base/module-types/?part_number=P38995-B21" | jq -e '.results[0].id')
+      mt=$(api "$base/module-types/?part_number=${self.input.part}" | jq -e '.results[0].id')
       tpl=$(api "$base/power-port-templates/?module_type_id=$mt" | jq -e '.results[0].id')
-      api -X PATCH "$base/power-port-templates/$tpl/" -d '{"allocated_draw": 300}' >/dev/null
-      for dev in ${join(" ", self.input)}; do
-        api "$base/module-bays/?device_id=$dev&name=PSU1&name=PSU2" \
-        | jq -ce --argjson dev "$dev" --argjson mt "$mt" \
+      api -X PATCH "$base/power-port-templates/$tpl/" -d '{"allocated_draw": ${self.input.draw}}' >/dev/null
+      for dev in ${join(" ", self.input.devices)}; do
+        api "$base/module-bays/?device_id=$dev${self.input.bays}" \
+        | jq -c --argjson dev "$dev" --argjson mt "$mt" \
             '.results[] | select(.installed_module == null)
              | {device: $dev, module_bay: .id, module_type: $mt, status: "active"}' \
         | while read -r module; do
