@@ -95,24 +95,49 @@ resource "netbox_power_feed" "jfk_b" {
   max_percent_utilization = 80
 }
 
-# neither the dl360 nor the nexus has power ports of its own, they arrive with the psu
-# modules. module bays are auto-created from the device type template so terraform never
-# learns their ids, and the provider has no module bay data source - hence the curl.
-resource "terraform_data" "psu_modules" {
-  for_each = {
+# one entry per build: what psu goes in it, what that build actually pulls per port, and
+# which bays to fill. draw belongs to the build, not the part - two builds can share a psu
+# and pull different wattage.
+locals {
+  psu_builds = {
     server = {
       part    = "P38995-B21"
       draw    = 300
-      bays    = "&name=PSU1&name=PSU2"
-      devices = concat(netbox_device.ewr_app[*].id, netbox_device.jfk_app[*].id)
+      bays    = ["PSU1", "PSU2"]
+      devices = local.servers
     }
     switch = {
       part    = "NXA-PAC-650W-PE"
       draw    = 350
-      bays    = "&name=PS1&name=PS2"
-      devices = concat([for d in netbox_device.ewr_switch : d.id], [for d in netbox_device.jfk_switch : d.id])
+      bays    = ["PS1", "PS2"]
+      devices = local.leaves
+    }
+    spine = {
+      part    = "NXA-PAC-1100W-PE2"
+      draw    = 400
+      bays    = ["PS1", "PS2"]
+      devices = local.spines
+    }
+    router = {
+      part    = "JPSU-650W-AC-AFO"
+      draw    = 300
+      bays    = ["Power Supply 0", "Power Supply 1"]
+      devices = local.routers
+    }
+    oob = {
+      part    = "PWR-C1-350WAC"
+      draw    = 150
+      bays    = ["PS-A", "PS-B"]
+      devices = local.oobs
     }
   }
+}
+
+# none of these platforms has power ports of its own, they arrive with the psu modules.
+# module bays are auto-created from the device type template so terraform never learns
+# their ids, and the provider has no module bay data source - hence the curl.
+resource "terraform_data" "psu_modules" {
+  for_each         = local.psu_builds
   input            = each.value
   triggers_replace = each.value
   depends_on       = [terraform_data.ndx_import]
@@ -127,18 +152,21 @@ resource "terraform_data" "psu_modules" {
           -H "Content-Type: application/json" "$@"
       }
       base="${var.netbox_server_url}/api/dcim"
+      devices="${join("", [for id in self.input.devices : "&device_id=${id}"])}"
       mt=$(api "$base/module-types/?part_number=${self.input.part}" | jq -e '.results[0].id')
-      tpl=$(api "$base/power-port-templates/?module_type_id=$mt" | jq -e '.results[0].id')
-      api -X PATCH "$base/power-port-templates/$tpl/" -d '{"allocated_draw": ${self.input.draw}}' >/dev/null
-      for dev in ${join(" ", self.input.devices)}; do
-        api "$base/module-bays/?device_id=$dev${self.input.bays}" \
-        | jq -c --argjson dev "$dev" --argjson mt "$mt" \
-            '.results[] | select(.installed_module == null)
-             | {device: $dev, module_bay: .id, module_type: $mt, status: "active"}' \
-        | while read -r module; do
-            api -X POST "$base/modules/" -d "$module" >/dev/null
-          done
-      done
+
+      # fill every empty psu bay on this build's devices, in one create
+      modules=$(api "$base/module-bays/?limit=0$devices" \
+        | jq -c --argjson mt "$mt" --argjson bays '${jsonencode(self.input.bays)}' \
+            '[.results[] | select(.installed_module == null) | select(.name | IN($bays[]))
+              | {device: .device.id, module_bay: .id, module_type: $mt, status: "active"}]')
+      [ "$modules" = "[]" ] || api -X POST "$base/modules/" -d "$modules" >/dev/null
+
+      # then set allocated draw on the ports those modules brought with them
+      draws=$(api "$base/power-ports/?limit=0$devices" \
+        | jq -c --argjson draw ${self.input.draw} \
+            '[.results[] | select(.module != null) | {id, allocated_draw: $draw}]')
+      [ "$draws" = "[]" ] || api -X PATCH "$base/power-ports/" -d "$draws" >/dev/null
     EOT
   }
 }
@@ -147,8 +175,8 @@ resource "terraform_data" "psu_modules" {
 # nothing to roll the downstream draw up into. no way to adopt template-created outlets
 # in terraform, so bulk patch the association on.
 resource "terraform_data" "pdu_outlets" {
-  input            = concat([for d in netbox_device.ewr_pdu : d.id], [for d in netbox_device.jfk_pdu : d.id])
-  triggers_replace = concat([for d in netbox_device.ewr_pdu : d.id], [for d in netbox_device.jfk_pdu : d.id])
+  input            = local.pdus
+  triggers_replace = local.pdus
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
@@ -160,20 +188,21 @@ resource "terraform_data" "pdu_outlets" {
           -H "Content-Type: application/json" "$@"
       }
       base="${var.netbox_server_url}/api/dcim"
-      for dev in ${join(" ", self.input)}; do
-        whip=$(api -G "$base/power-ports/" \
-          --data-urlencode "device_id=$dev" --data-urlencode "name=power whip" \
-          | jq -e '.results[0].id')
-        outlets=$(api "$base/power-outlets/?device_id=$dev&limit=0" \
-          | jq -c --argjson whip "$whip" '[.results[] | {id, power_port: $whip}]')
-        api -X PATCH "$base/power-outlets/" -d "$outlets" >/dev/null
-      done
+      devices="${join("", [for id in self.input : "&device_id=${id}"])}"
+
+      # the ap8965's only power port is the whip, so this is device id -> whip id
+      whips=$(api "$base/power-ports/?limit=0$devices" \
+        | jq -c '[.results[] | {key: (.device.id | tostring), value: .id}] | from_entries')
+      outlets=$(api "$base/power-outlets/?limit=0$devices" \
+        | jq -c --argjson whips "$whips" \
+            '[.results[] | {id, power_port: $whips[.device.id | tostring]}]')
+      [ "$outlets" = "[]" ] || api -X PATCH "$base/power-outlets/" -d "$outlets" >/dev/null
     EOT
   }
 }
 
 data "netbox_device_power_ports" "psu" {
-  name_regex = "^PSU[12]$"
+  name_regex = "^(PSU[12]|PEM [01]|PS-[AB])$"
   depends_on = [terraform_data.psu_modules]
 }
 

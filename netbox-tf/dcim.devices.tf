@@ -1,3 +1,13 @@
+# every device of each kind, across both sites. apps are counted, the rest are keyed.
+locals {
+  servers = concat(netbox_device.ewr_app[*].id, netbox_device.jfk_app[*].id)
+  leaves  = concat(values(netbox_device.ewr_switch)[*].id, values(netbox_device.jfk_switch)[*].id)
+  spines  = concat(values(netbox_device.ewr_spine)[*].id, values(netbox_device.jfk_spine)[*].id)
+  routers = concat(values(netbox_device.ewr_rtr)[*].id, values(netbox_device.jfk_rtr)[*].id)
+  oobs    = concat(values(netbox_device.ewr_oob)[*].id, values(netbox_device.jfk_oob)[*].id)
+  pdus    = concat(values(netbox_device.ewr_pdu)[*].id, values(netbox_device.jfk_pdu)[*].id)
+}
+
 resource "netbox_device_type" "c8000v" {
   manufacturer_id = netbox_manufacturer.cisco.id
   model           = "C8000V"

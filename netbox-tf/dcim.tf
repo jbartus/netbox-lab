@@ -21,9 +21,12 @@ locals {
     "cisco/cisco-n9k-c93180yc-fx3",
     "cisco/cisco-n9k-c9336c-fx2",
     "cisco/NXA-PAC-650W-PE",
+    "cisco/NXA-PAC-1100W-PE2",
+    "cisco/PWR-C1-350WAC",
     "hpe/hpe-proliant-dl360-gen11",
     "hpe/P38995-B21",
     "juniper/juniper-mx204",
+    "juniper/JPSU-650W-AC-AFO",
     "schneider-electric/apc-ar3355b2",
     "schneider-electric/apc-ap8965",
   ]
