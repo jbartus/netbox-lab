@@ -1,12 +1,14 @@
 locals {
   # the ap8965's c19 outlets are 8, 16 and 24; take c13s spread over all three feed legs.
   # outlet 1 is the cord end, so read the list as top of pdu down: the switch at u40 takes
-  # it, then app01 at u29 on down. nine devices in a rack, 3 per leg.
+  # it, then app01 at u29 on down. seventeen devices in a rack, 6/6/5 across the legs.
   switch_outlet = "power outlet 1"
   psu_outlets = [
-    "power outlet 2", "power outlet 3",
-    "power outlet 9", "power outlet 10", "power outlet 11",
-    "power outlet 17", "power outlet 18", "power outlet 19",
+    "power outlet 2", "power outlet 3", "power outlet 4", "power outlet 5", "power outlet 6",
+    "power outlet 9", "power outlet 10", "power outlet 11", "power outlet 12",
+    "power outlet 13", "power outlet 14",
+    "power outlet 17", "power outlet 18", "power outlet 19", "power outlet 20",
+    "power outlet 21",
   ]
 }
 
@@ -261,7 +263,7 @@ resource "netbox_cable" "jfk_switch_psu2" {
 }
 
 resource "netbox_cable" "ewr_psu1" {
-  count  = 16
+  count  = 32
   status = "connected"
   type   = "power"
 
@@ -271,12 +273,12 @@ resource "netbox_cable" "ewr_psu1" {
   }
   b_termination {
     object_type = "dcim.poweroutlet"
-    object_id   = local.pdu_outlets["${count.index < 8 ? netbox_device.ewr_pdu["pdu3a"].id : netbox_device.ewr_pdu["pdu4a"].id}/${local.psu_outlets[count.index % 8]}"]
+    object_id   = local.pdu_outlets["${count.index < 16 ? netbox_device.ewr_pdu["pdu3a"].id : netbox_device.ewr_pdu["pdu4a"].id}/${local.psu_outlets[count.index % 16]}"]
   }
 }
 
 resource "netbox_cable" "ewr_psu2" {
-  count  = 16
+  count  = 32
   status = "connected"
   type   = "power"
 
@@ -286,12 +288,12 @@ resource "netbox_cable" "ewr_psu2" {
   }
   b_termination {
     object_type = "dcim.poweroutlet"
-    object_id   = local.pdu_outlets["${count.index < 8 ? netbox_device.ewr_pdu["pdu3b"].id : netbox_device.ewr_pdu["pdu4b"].id}/${local.psu_outlets[count.index % 8]}"]
+    object_id   = local.pdu_outlets["${count.index < 16 ? netbox_device.ewr_pdu["pdu3b"].id : netbox_device.ewr_pdu["pdu4b"].id}/${local.psu_outlets[count.index % 16]}"]
   }
 }
 
 resource "netbox_cable" "jfk_psu1" {
-  count  = 16
+  count  = 32
   status = "connected"
   type   = "power"
 
@@ -301,12 +303,12 @@ resource "netbox_cable" "jfk_psu1" {
   }
   b_termination {
     object_type = "dcim.poweroutlet"
-    object_id   = local.pdu_outlets["${count.index < 8 ? netbox_device.jfk_pdu["pdu3a"].id : netbox_device.jfk_pdu["pdu4a"].id}/${local.psu_outlets[count.index % 8]}"]
+    object_id   = local.pdu_outlets["${count.index < 16 ? netbox_device.jfk_pdu["pdu3a"].id : netbox_device.jfk_pdu["pdu4a"].id}/${local.psu_outlets[count.index % 16]}"]
   }
 }
 
 resource "netbox_cable" "jfk_psu2" {
-  count  = 16
+  count  = 32
   status = "connected"
   type   = "power"
 
@@ -316,6 +318,6 @@ resource "netbox_cable" "jfk_psu2" {
   }
   b_termination {
     object_type = "dcim.poweroutlet"
-    object_id   = local.pdu_outlets["${count.index < 8 ? netbox_device.jfk_pdu["pdu3b"].id : netbox_device.jfk_pdu["pdu4b"].id}/${local.psu_outlets[count.index % 8]}"]
+    object_id   = local.pdu_outlets["${count.index < 16 ? netbox_device.jfk_pdu["pdu3b"].id : netbox_device.jfk_pdu["pdu4b"].id}/${local.psu_outlets[count.index % 16]}"]
   }
 }

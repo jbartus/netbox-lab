@@ -76,15 +76,15 @@ resource "netbox_device_role" "oob" {
 }
 
 resource "netbox_device" "ewr_app" {
-  count          = 16
+  count          = 32
   name           = format("app%02d", count.index + 1)
   device_type_id = data.netbox_device_type.dl360.id
   role_id        = netbox_device_role.server.id
   site_id        = netbox_site.ewr.id
   location_id    = netbox_location.mmr2.id
-  rack_id        = count.index < 8 ? netbox_rack.mmr2_rack3.id : netbox_rack.mmr2_rack4.id
+  rack_id        = count.index < 16 ? netbox_rack.mmr2_rack3.id : netbox_rack.mmr2_rack4.id
   rack_face      = "front"
-  rack_position  = 29 - (count.index % 8)
+  rack_position  = 29 - (count.index % 16)
   tenant_id      = netbox_tenant.vaulter.id
   status         = "active"
 }
@@ -179,15 +179,15 @@ resource "netbox_device" "ewr_oob" {
 }
 
 resource "netbox_device" "jfk_app" {
-  count          = 16
+  count          = 32
   name           = format("app%02d", count.index + 1)
   device_type_id = data.netbox_device_type.dl360.id
   role_id        = netbox_device_role.server.id
   site_id        = netbox_site.jfk.id
   location_id    = netbox_location.floor30.id
-  rack_id        = count.index < 8 ? netbox_rack.floor30_rack3.id : netbox_rack.floor30_rack4.id
+  rack_id        = count.index < 16 ? netbox_rack.floor30_rack3.id : netbox_rack.floor30_rack4.id
   rack_face      = "front"
-  rack_position  = 29 - (count.index % 8)
+  rack_position  = 29 - (count.index % 16)
   tenant_id      = netbox_tenant.vaulter.id
   status         = "active"
 }
