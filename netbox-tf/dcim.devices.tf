@@ -80,17 +80,17 @@ data "netbox_device_type" "mx204" {
 
 resource "netbox_device_role" "server" {
   name      = "server"
-  color_hex = "00ff00"
+  color_hex = "8bc34a"
 }
 
 resource "netbox_device_role" "pdu" {
   name      = "PDU"
-  color_hex = "ff9900"
+  color_hex = "ff9800"
 }
 
 resource "netbox_device_role" "switch" {
   name      = "switch"
-  color_hex = "2196f3"
+  color_hex = "00bcd4"
 }
 
 resource "netbox_device_role" "router" {
