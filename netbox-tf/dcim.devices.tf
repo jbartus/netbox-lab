@@ -38,7 +38,6 @@ locals {
   spines  = concat(values(netbox_device.ewr_spine)[*].id, values(netbox_device.jfk_spine)[*].id)
   routers = concat(values(netbox_device.ewr_rtr)[*].id, values(netbox_device.jfk_rtr)[*].id)
   oobs    = concat(values(netbox_device.ewr_oob)[*].id, values(netbox_device.jfk_oob)[*].id)
-  pdus    = concat(values(netbox_device.ewr_pdu)[*].id, values(netbox_device.jfk_pdu)[*].id)
 }
 
 resource "netbox_device_type" "c8000v" {

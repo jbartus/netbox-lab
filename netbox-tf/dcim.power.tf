@@ -171,35 +171,6 @@ resource "terraform_data" "psu_modules" {
   }
 }
 
-# ndx ships the ap8965's outlets with a feed_leg but no parent power_port, so netbox has
-# nothing to roll the downstream draw up into. no way to adopt template-created outlets
-# in terraform, so bulk patch the association on.
-resource "terraform_data" "pdu_outlets" {
-  input            = local.pdus
-  triggers_replace = local.pdus
-
-  provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = <<-EOT
-      set -euo pipefail
-      api() {
-        curl -sS --fail-with-body \
-          -H "Authorization: Token ${var.netbox_api_token}" \
-          -H "Content-Type: application/json" "$@"
-      }
-      base="${var.netbox_server_url}/api/dcim"
-      devices="${join("", [for id in self.input : "&device_id=${id}"])}"
-
-      # the ap8965's only power port is the whip, so this is device id -> whip id
-      whips=$(api "$base/power-ports/?limit=0$devices" \
-        | jq -c '[.results[] | {key: (.device.id | tostring), value: .id}] | from_entries')
-      outlets=$(api "$base/power-outlets/?limit=0$devices" \
-        | jq -c --argjson whips "$whips" \
-            '[.results[] | {id, power_port: $whips[.device.id | tostring]}]')
-      [ "$outlets" = "[]" ] || api -X PATCH "$base/power-outlets/" -d "$outlets" >/dev/null
-    EOT
-  }
-}
 
 data "netbox_device_power_ports" "psu" {
   name_regex = "^(PSU[12]|PEM [01]|PS-[AB])$"
