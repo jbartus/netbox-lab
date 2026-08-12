@@ -25,6 +25,7 @@ locals {
     "cisco/PWR-C1-350WAC",
     "hpe/hpe-proliant-dl360-gen11",
     "hpe/P38995-B21",
+    "hpe/P42044-B21",
     "juniper/juniper-mx204",
     "juniper/JPSU-650W-AC-AFO",
     "schneider-electric/apc-ar3355b2",

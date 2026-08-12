@@ -95,86 +95,71 @@ resource "netbox_power_feed" "jfk_b" {
   max_percent_utilization = 80
 }
 
-# one entry per build: what psu goes in it, what that build actually pulls per port, and
-# which bays to fill. draw belongs to the build, not the part - two builds can share a psu
-# and pull different wattage.
 locals {
-  psu_builds = {
-    server = {
-      part    = "P38995-B21"
-      draw    = 300
-      bays    = ["PSU1", "PSU2"]
-      devices = local.servers
-    }
-    switch = {
-      part    = "NXA-PAC-650W-PE"
-      draw    = 350
-      bays    = ["PS1", "PS2"]
-      devices = local.leaves
-    }
-    spine = {
-      part    = "NXA-PAC-1100W-PE2"
-      draw    = 400
-      bays    = ["PS1", "PS2"]
-      devices = local.spines
-    }
-    router = {
-      part    = "JPSU-650W-AC-AFO"
-      draw    = 300
-      bays    = ["Power Supply 0", "Power Supply 1"]
-      devices = local.routers
-    }
-    oob = {
-      part    = "PWR-C1-350WAC"
-      draw    = 150
-      bays    = ["PS-A", "PS-B"]
-      devices = local.oobs
-    }
+  # what module goes in which bays. psus, nics, anything bay-mounted installs the same way.
+  modules = {
+    server_psu = { part = "P38995-B21", bays = ["PSU1", "PSU2"], devices = local.servers }
+    server_nic = { part = "P42044-B21", bays = ["OCP1"], devices = local.servers }
+    switch_psu = { part = "NXA-PAC-650W-PE", bays = ["PS1", "PS2"], devices = local.leaves }
+    spine_psu  = { part = "NXA-PAC-1100W-PE2", bays = ["PS1", "PS2"], devices = local.spines }
+    router_psu = { part = "JPSU-650W-AC-AFO", bays = ["Power Supply 0", "Power Supply 1"], devices = local.routers }
+    oob_psu    = { part = "PWR-C1-350WAC", bays = ["PS-A", "PS-B"], devices = local.oobs }
+  }
+
+  # what each build actually pulls, per power port. a property of the build, not of the psu
+  # part - two builds can share a psu and draw different wattage. nics have no power port,
+  # so they are simply absent here.
+  draws = {
+    server = { watts = 300, devices = local.servers }
+    switch = { watts = 350, devices = local.leaves }
+    spine  = { watts = 400, devices = local.spines }
+    router = { watts = 300, devices = local.routers }
+    oob    = { watts = 150, devices = local.oobs }
   }
 }
 
 # none of these platforms has power ports of its own, they arrive with the psu modules.
 # module bays are auto-created from the device type template so terraform never learns
 # their ids, and the provider has no module bay data source - hence the curl.
-resource "terraform_data" "psu_modules" {
-  for_each         = local.psu_builds
+resource "terraform_data" "modules" {
+  for_each         = local.modules
   input            = each.value
   triggers_replace = each.value
   depends_on       = [terraform_data.ndx_import]
 
   provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = <<-EOT
-      set -euo pipefail
-      api() {
-        curl -sS --fail-with-body \
-          -H "Authorization: Token ${var.netbox_api_token}" \
-          -H "Content-Type: application/json" "$@"
-      }
-      base="${var.netbox_server_url}/api/dcim"
-      devices="${join("", [for id in self.input.devices : "&device_id=${id}"])}"
-      mt=$(api "$base/module-types/?part_number=${self.input.part}" | jq -e '.results[0].id')
+    command = "${path.module}/scripts/install-modules.sh"
+    environment = {
+      NETBOX_URL   = var.netbox_server_url
+      NETBOX_TOKEN = var.netbox_api_token
+      PART         = self.input.part
+      BAYS         = join("\n", self.input.bays)
+      DEVICES      = join(" ", self.input.devices)
+    }
+  }
+}
 
-      # fill every empty psu bay on this build's devices, in one create
-      modules=$(api "$base/module-bays/?limit=0$devices" \
-        | jq -c --argjson mt "$mt" --argjson bays '${jsonencode(self.input.bays)}' \
-            '[.results[] | select(.installed_module == null) | select(.name | IN($bays[]))
-              | {device: .device.id, module_bay: .id, module_type: $mt, status: "active"}]')
-      [ "$modules" = "[]" ] || api -X POST "$base/modules/" -d "$modules" >/dev/null
+resource "terraform_data" "allocated_draw" {
+  for_each         = local.draws
+  input            = each.value
+  triggers_replace = each.value
+  depends_on       = [terraform_data.modules]
 
-      # then set allocated draw on the ports those modules brought with them
-      draws=$(api "$base/power-ports/?limit=0$devices" \
-        | jq -c --argjson draw ${self.input.draw} \
-            '[.results[] | select(.module != null) | {id, allocated_draw: $draw}]')
-      [ "$draws" = "[]" ] || api -X PATCH "$base/power-ports/" -d "$draws" >/dev/null
-    EOT
+  provisioner "local-exec" {
+    command = "${path.module}/scripts/set-allocated-draw.sh"
+    environment = {
+      NETBOX_URL   = var.netbox_server_url
+      NETBOX_TOKEN = var.netbox_api_token
+      WATTS        = self.input.watts
+      DEVICES      = join(" ", self.input.devices)
+    }
   }
 }
 
 
 data "netbox_device_power_ports" "psu" {
   name_regex = "^(PSU[12]|PEM [01]|PS-[AB])$"
-  depends_on = [terraform_data.psu_modules]
+  depends_on = [terraform_data.modules]
 }
 
 data "netbox_device_power_ports" "whip" {

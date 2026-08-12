@@ -170,11 +170,12 @@ resource "netbox_ip_range" "compute_dhcp" {
   description    = "dhcp pool"
 }
 
-# gig-e 1 and ilo are instantiated from the dl360 device type, so terraform never sees
+# ethernet/ocp1/1 arrives with the nic module, ilo from the device type - terraform never sees
 # their ids - look them up the same way the power ports are
 data "netbox_device_interfaces" "server_nics" {
-  name_regex = "^(Gig-E 1|iLO)$"
-  depends_on = [netbox_device.ewr_app, netbox_device.jfk_app]
+  name_regex = "^(Ethernet/OCP1/1|iLO)$"
+  # ethernet/ocp1/1 only exists once the nic module is installed
+  depends_on = [terraform_data.modules]
 }
 
 locals {
@@ -184,7 +185,7 @@ locals {
 resource "netbox_ip_address" "ewr_server" {
   count               = local.servers_per_rack * 2
   ip_address          = "10.1.3.${10 + count.index}/24"
-  device_interface_id = local.server_nics["${netbox_device.ewr_app[count.index].id}/Gig-E 1"]
+  device_interface_id = local.server_nics["${netbox_device.ewr_app[count.index].id}/Ethernet/OCP1/1"]
   status              = "active"
   tenant_id           = netbox_tenant.vaulter.id
   dns_name            = "${netbox_device.ewr_app[count.index].name}.ewr.vaulter.net"
@@ -202,7 +203,7 @@ resource "netbox_ip_address" "ewr_ilo" {
 resource "netbox_ip_address" "jfk_server" {
   count               = local.servers_per_rack * 2
   ip_address          = "10.2.3.${10 + count.index}/24"
-  device_interface_id = local.server_nics["${netbox_device.jfk_app[count.index].id}/Gig-E 1"]
+  device_interface_id = local.server_nics["${netbox_device.jfk_app[count.index].id}/Ethernet/OCP1/1"]
   status              = "active"
   tenant_id           = netbox_tenant.vaulter.id
   dns_name            = "${netbox_device.jfk_app[count.index].name}.jfk.vaulter.net"
