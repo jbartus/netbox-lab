@@ -200,23 +200,7 @@ resource "netbox_ip_address" "ewr_ilo" {
   dns_name            = "${netbox_device.ewr_app[count.index].name}-ilo.ewr.vaulter.net"
 }
 
-resource "netbox_ip_address" "jfk_server" {
-  count               = local.servers_per_rack * 2
-  ip_address          = "10.2.3.${10 + count.index}/24"
-  device_interface_id = local.server_nics["${netbox_device.jfk_app[count.index].id}/Ethernet/OCP1/1"]
-  status              = "active"
-  tenant_id           = netbox_tenant.vaulter.id
-  dns_name            = "${netbox_device.jfk_app[count.index].name}.jfk.vaulter.net"
-}
 
-resource "netbox_ip_address" "jfk_ilo" {
-  count               = local.servers_per_rack * 2
-  ip_address          = "10.2.2.${10 + count.index}/24"
-  device_interface_id = local.server_nics["${netbox_device.jfk_app[count.index].id}/iLO"]
-  status              = "active"
-  tenant_id           = netbox_tenant.vaulter.id
-  dns_name            = "${netbox_device.jfk_app[count.index].name}-ilo.jfk.vaulter.net"
-}
 
 resource "netbox_device_primary_ip" "ewr_server" {
   count         = local.servers_per_rack * 2
@@ -224,11 +208,6 @@ resource "netbox_device_primary_ip" "ewr_server" {
   ip_address_id = netbox_ip_address.ewr_server[count.index].id
 }
 
-resource "netbox_device_primary_ip" "jfk_server" {
-  count         = local.servers_per_rack * 2
-  device_id     = netbox_device.jfk_app[count.index].id
-  ip_address_id = netbox_ip_address.jfk_server[count.index].id
-}
 
 # netbox treats the rfcs as pseudo-registries. only rfc1918 applies here - the transit
 # /30s are provider-assigned out of zayo/at&t space, so we hold no aggregate for them.

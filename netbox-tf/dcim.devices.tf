@@ -33,8 +33,8 @@ locals {
 
 # every device of each kind, across both sites. apps are counted, the rest are keyed.
 locals {
-  servers = concat(netbox_device.ewr_app[*].id, netbox_device.jfk_app[*].id)
-  leaves  = concat(values(netbox_device.ewr_switch)[*].id, values(netbox_device.jfk_switch)[*].id)
+  servers = netbox_device.ewr_app[*].id
+  leaves  = values(netbox_device.ewr_switch)[*].id
   spines  = concat(values(netbox_device.ewr_spine)[*].id, values(netbox_device.jfk_spine)[*].id)
   routers = concat(values(netbox_device.ewr_rtr)[*].id, values(netbox_device.jfk_rtr)[*].id)
   oobs    = concat(values(netbox_device.ewr_oob)[*].id, values(netbox_device.jfk_oob)[*].id)
@@ -210,36 +210,7 @@ resource "netbox_device" "ewr_oob" {
   status         = "active"
 }
 
-resource "netbox_device" "jfk_app" {
-  count          = local.servers_per_rack * 2
-  name           = format("app%02d", count.index + 1)
-  device_type_id = data.netbox_device_type.dl360.id
-  role_id        = netbox_device_role.server.id
-  site_id        = netbox_site.jfk.id
-  location_id    = netbox_location.floor30.id
-  rack_id        = count.index < local.servers_per_rack ? netbox_rack.floor30_rack3.id : netbox_rack.floor30_rack4.id
-  rack_face      = "front"
-  rack_position  = local.compute_slots[count.index % local.servers_per_rack].u
-  tenant_id      = netbox_tenant.vaulter.id
-  status         = "active"
-}
 
-resource "netbox_device" "jfk_switch" {
-  for_each = {
-    sw3 = netbox_rack.floor30_rack3.id
-    sw4 = netbox_rack.floor30_rack4.id
-  }
-  name           = each.key
-  rack_id        = each.value
-  device_type_id = data.netbox_device_type.n93180yc.id
-  role_id        = netbox_device_role.switch.id
-  site_id        = netbox_site.jfk.id
-  location_id    = netbox_location.floor30.id
-  rack_face      = "front"
-  rack_position  = 40
-  tenant_id      = netbox_tenant.vaulter.id
-  status         = "active"
-}
 
 resource "netbox_device" "jfk_rtr" {
   for_each = {
@@ -298,10 +269,6 @@ resource "netbox_device" "jfk_pdu" {
     pdu1b = netbox_rack.floor30_rack1.id
     pdu2a = netbox_rack.floor30_rack2.id
     pdu2b = netbox_rack.floor30_rack2.id
-    pdu3a = netbox_rack.floor30_rack3.id
-    pdu3b = netbox_rack.floor30_rack3.id
-    pdu4a = netbox_rack.floor30_rack4.id
-    pdu4b = netbox_rack.floor30_rack4.id
   }
   name           = each.key
   rack_id        = each.value
