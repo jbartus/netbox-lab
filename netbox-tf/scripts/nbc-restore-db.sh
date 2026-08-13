@@ -2,8 +2,9 @@
 
 set -euo pipefail
 
-# req'd vars
-[ -f .env ] && { set -o allexport; source ./.env; set +o allexport; }
+# req'd vars, from .env next to this script
+env="$(dirname "$0")/.env"
+[ -f "$env" ] && { set -o allexport; source "$env"; set +o allexport; }
 : "${ORG_ID:?}" "${TARGET_NB_ID:?}" "${BACKUP_ID:?}" "${API_KEY:?}"
 
 # retrieve the backup
