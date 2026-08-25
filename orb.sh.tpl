@@ -2,6 +2,28 @@
 
 set -xeuo pipefail
 
+%{ if proxy_url != "" ~}
+# no route off the vpc, so dnf/pip/aws all go through the proxy. IMDS stays direct.
+export http_proxy="${proxy_url}" https_proxy="${proxy_url}" no_proxy="localhost,127.0.0.1,169.254.169.254"
+
+# scan.sh runs later from an interactive shell, which never sees the exports above
+cat > /etc/profile.d/proxy.sh << EOF
+export http_proxy="${proxy_url}" https_proxy="${proxy_url}"
+export HTTP_PROXY="${proxy_url}" HTTPS_PROXY="${proxy_url}"
+export no_proxy="localhost,127.0.0.1,169.254.169.254"
+export NO_PROXY="localhost,127.0.0.1,169.254.169.254"
+EOF
+
+# trust the proxy CA so this host (and dockerd) accept the intercepted TLS
+cat > /etc/pki/ca-trust/source/anchors/mitmproxy-ca-cert.pem << 'CACERT'
+${ca_cert_pem}
+CACERT
+update-ca-trust
+
+# must stay ahead of the first dnf -- set -e means a failed install kills userdata
+until curl -s -o /dev/null https://quay.io/v2/; do sleep 5; done
+%{ endif ~}
+
 dnf -y install docker
 
 %{ if proxy_url != "" ~}
@@ -14,20 +36,9 @@ Environment="HTTP_PROXY=${proxy_url}"
 Environment="HTTPS_PROXY=${proxy_url}"
 Environment="NO_PROXY=localhost,127.0.0.1,169.254.169.254"
 EOF
-
-# trust the proxy CA so dockerd accepts the intercepted registry TLS
-cat > /etc/pki/ca-trust/source/anchors/mitmproxy-ca-cert.pem << 'CACERT'
-${ca_cert_pem}
-CACERT
-update-ca-trust
 %{ endif ~}
 
 systemctl enable --now docker
-
-%{ if proxy_url != "" ~}
-# mitmproxy boots in parallel; wait for it to answer before the pull depends on it
-until curl -s -o /dev/null --proxy "${proxy_url}" https://quay.io/v2/; do sleep 5; done
-%{ endif ~}
 
 # get the orb pro agent
 docker login quay.io -u '${nbl_registry_user}' -p '${nbl_registry_token}'
@@ -43,6 +54,21 @@ TOKEN="$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-met
 LOCAL_IP="$(curl -H "X-aws-ec2-metadata-token: $${TOKEN}" 'http://169.254.169.254/latest/meta-data/local-ipv4' -s)"
 sed -i "s/VAULTIP/$${LOCAL_IP}/" orb.yaml
 
+%{ if proxy_url != "" ~}
+# the container sees none of the host's proxy config (that drop-in is dockerd's)
+cat << EOF > proxy.env
+HTTPS_PROXY=${proxy_url}
+HTTP_PROXY=${proxy_url}
+NO_PROXY=$${LOCAL_IP},localhost,127.0.0.1,169.254.169.254
+DIODE_CERT_FILE=/opt/orb/mitm-ca.pem
+EOF
+
+# PWD is the /opt/orb bind mount, so this lands inside the container too
+cat << 'CACERT' > mitm-ca.pem
+${ca_cert_pem}
+CACERT
+%{ endif ~}
+
 cat << 'EOF' > scan.sh
 # grab the diode credentials the enterprise host published
 [ -f .env ] || aws s3 cp "s3://${bucket}/diode.env" .env
@@ -52,7 +78,11 @@ docker stop orb 2>/dev/null || true
 docker rm orb 2>/dev/null || true
 
 # run the scan
-docker run --env-file .env --net host -d --name orb -v $${PWD}:/opt/orb/ \
+docker run --env-file .env \
+%{ if proxy_url != "" ~}
+  --env-file proxy.env \
+%{ endif ~}
+  --net host -d --name orb -v $${PWD}:/opt/orb/ \
   quay.io/netboxlabs/orb-agent-pro:latest run --config /opt/orb/orb.yaml
 
 # follow the logs
@@ -64,8 +94,8 @@ chmod +x scan.sh
 docker run -d --cap-add=IPC_LOCK -p 8200:8200 -e 'VAULT_DEV_ROOT_TOKEN_ID=dev-only-token' -e 'SKIP_SETCAP=true' hashicorp/vault
 export VAULT_ADDR='http://127.0.0.1:8200'
 
-sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-sudo yum -y install vault
+yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+yum -y install vault
 
 vault login dev-only-token
 vault kv put secret/cisco/v8000 password=hardcode

@@ -6,7 +6,9 @@ cd /root
 
 %{ if proxy_url != "" ~}
 # used by curl, ignored by EC (which needs them passed explicitly as install command args)
+# no_proxy or IMDS gets proxied and answers with mitmproxy's identity
 export http_proxy="${proxy_url}" https_proxy="${proxy_url}"
+export no_proxy="localhost,127.0.0.1,169.254.169.254" NO_PROXY="localhost,127.0.0.1,169.254.169.254"
 
 # add the tls proxy cert to this hosts trust store
 cat > /etc/pki/ca-trust/source/anchors/mitmproxy-ca-cert.pem << 'CACERT'
@@ -83,11 +85,14 @@ export PATH=/var/lib/embedded-cluster/bin:$PATH
 until MINT_OUTPUT=$(kubectl exec -i -n kotsadm deploy/netbox-netbox -c netbox -- /opt/netbox/netbox/manage.py shell < mint-diode-creds.py); do sleep 30; done
 CLIENT_ID=$(awk '/^CLIENT_ID/ {print $2}' <<< "$MINT_OUTPUT")
 CLIENT_SECRET=$(awk '/^CLIENT_SECRET/ {print $2}' <<< "$MINT_OUTPUT")
-NBE_IP=$(hostname -I | awk '{print $1}')
-
 # the orb host's scan.sh downloads this as its .env
+# (with the proxy, TLS by name -- mitmproxy needs a name to mint a cert for)
 cat << EOF > diode.env
-DIODE_SERVER=grpc://$NBE_IP:80/diode
+%{ if proxy_url != "" ~}
+DIODE_SERVER=grpcs://$(hostname -f):443/diode
+%{ else ~}
+DIODE_SERVER=grpc://$(hostname -I | awk '{print $1}'):80/diode
+%{ endif ~}
 DIODE_CLIENT_ID=$CLIENT_ID
 DIODE_CLIENT_SECRET=$CLIENT_SECRET
 EOF

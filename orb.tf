@@ -3,10 +3,19 @@ resource "aws_security_group" "orb" {
   vpc_id = module.vpc.vpc_id
 }
 
+# allow outbound by default, but not if mitmproxy is enabled
 resource "aws_vpc_security_group_egress_rule" "orb_allow_all_out" {
-  count             = var.enable_discovery ? 1 : 0
+  count             = var.enable_discovery && !var.enable_mitmproxy ? 1 : 0
   security_group_id = aws_security_group.orb[0].id
   cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+# proxy is the only way out, or nothing proves the traffic went through it
+resource "aws_vpc_security_group_egress_rule" "orb_allow_vpc_out" {
+  count             = var.enable_discovery && var.enable_mitmproxy ? 1 : 0
+  security_group_id = aws_security_group.orb[0].id
+  cidr_ipv4         = module.vpc.vpc_cidr_block
   ip_protocol       = "-1"
 }
 

@@ -15,9 +15,11 @@ EOF
 chmod 777 /root/.mitmproxy            # container runs as non-root uid
 chmod 644 /root/.mitmproxy/mitmproxy-ca.pem
 
+# --ssl-insecure: NBE's self-generated cert on 443 is unverifiable upstream
 docker run -d --name mitmproxy --restart unless-stopped \
   -p 8080:8080 \
   -v /root/.mitmproxy:/home/mitmproxy/.mitmproxy \
   mitmproxy/mitmproxy \
   mitmdump --listen-host 0.0.0.0 --set block_global=false \
-  --proxyauth testuser:passw0rd
+  --proxyauth testuser:passw0rd \
+  --ssl-insecure
