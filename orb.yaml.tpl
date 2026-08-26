@@ -39,6 +39,12 @@ orb:
             hostname: ${c8kv_ip}
             username: iosuser
             password: "$${vault://secret/cisco/v8000/password}"
+%{ if enable_clab ~}
+          - driver: eos
+            hostname: 172.20.20.11-14
+            username: admin
+            password: "$${vault://secret/arista/ceos/password}"
+%{ endif ~}
 #    snmp_discovery:
 #      snmp_policy:
 #        config:

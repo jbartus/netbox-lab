@@ -99,6 +99,7 @@ yum -y install vault
 
 vault login dev-only-token
 vault kv put secret/cisco/v8000 password=hardcode
+vault kv put secret/arista/ceos password=admin
 
 dnf -y install nmap net-snmp-utils net-snmp-libs
 

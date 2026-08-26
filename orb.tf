@@ -36,6 +36,7 @@ resource "aws_instance" "orb_instance" {
       public_subnet    = module.vpc.public_subnet_objects[0].cidr_block
       c8kv_ip          = aws_instance.c8kv_instance[0].private_ip
       msft_dns_dhcp_ip = var.enable_msft_dns_dhcp ? aws_instance.msft_dns_dhcp_instance[0].private_ip : ""
+      enable_clab      = var.enable_clab
     })
   })
   associate_public_ip_address = true

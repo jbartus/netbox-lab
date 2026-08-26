@@ -133,3 +133,8 @@ variable "enable_rhel" {
   type    = bool
   default = false
 }
+
+variable "enable_clab" {
+  type    = bool
+  default = false
+}
