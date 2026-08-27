@@ -1,0 +1,42 @@
+name: fabric
+
+topology:
+  kinds:
+    arista_ceos:
+      image: ceos:latest
+    linux:
+      image: alpine:latest
+
+  nodes:
+    spine1:
+      kind: arista_ceos
+      startup-config: clab-spine.cfg
+      mgmt-ipv4: 172.20.20.11
+    spine2:
+      kind: arista_ceos
+      startup-config: clab-spine.cfg
+      mgmt-ipv4: 172.20.20.12
+    leaf1:
+      kind: arista_ceos
+      startup-config: clab-leaf.cfg
+      mgmt-ipv4: 172.20.20.13
+    leaf2:
+      kind: arista_ceos
+      startup-config: clab-leaf.cfg
+      mgmt-ipv4: 172.20.20.14
+    host1:
+      kind: linux
+      exec:
+        - ip addr add 10.10.10.11/24 dev eth1
+    host2:
+      kind: linux
+      exec:
+        - ip addr add 10.10.10.12/24 dev eth1
+
+  links:
+    - endpoints: ["spine1:eth1", "leaf1:eth1"]
+    - endpoints: ["spine1:eth2", "leaf2:eth1"]
+    - endpoints: ["spine2:eth1", "leaf1:eth2"]
+    - endpoints: ["spine2:eth2", "leaf2:eth2"]
+    - endpoints: ["leaf1:eth3", "host1:eth1"]
+    - endpoints: ["leaf2:eth3", "host2:eth1"]
