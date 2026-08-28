@@ -54,26 +54,28 @@ orb:
 #          authentication:
 #            protocol_version: "SNMPv2c"
 #            community: "public"
-#    worker:
-#      msft_dns_worker:
-#        config:
-#          package: nbl_msft_dns
-#          MSFT_DNS_HOST: "${msft_dns_dhcp_ip}"
-#          MSFT_DNS_USERNAME: ".\\svc-netbox"
-#          MSFT_DNS_PASSWORD: "NetBoxDHCP123!"
-#          MSFT_DNS_PORT: 5985
-#          MSFT_DNS_USE_SSL: false
-#          MSFT_DNS_VERIFY_SSL: false
-#          BOOTSTRAP: True
-#        scope:
-#      msft_dhcp_worker:
-#        config:
-#          package: nbl_msft_dhcp
-#          MSFT_DHCP_HOST: "${msft_dns_dhcp_ip}"
-#          MSFT_DHCP_USERNAME: ".\\svc-netbox"
-#          MSFT_DHCP_PASSWORD: "NetBoxDHCP123!"
-#          MSFT_DHCP_PORT: 5985
-#          MSFT_DHCP_USE_SSL: false
-#          MSFT_DHCP_VERIFY_SSL: false
-#          BOOTSTRAP: True
-#        scope:
+%{ if msft_dns_dhcp_ip != "" ~}
+    worker:
+      msft_dns_worker:
+        config:
+          package: nbl_msft_dns
+          MSFT_DNS_HOST: "${msft_dns_dhcp_ip}"
+          MSFT_DNS_USERNAME: ".\\svc-netbox"
+          MSFT_DNS_PASSWORD: "NetBoxDHCP123!"
+          MSFT_DNS_PORT: 5985
+          MSFT_DNS_USE_SSL: false
+          MSFT_DNS_VERIFY_SSL: false
+          BOOTSTRAP: True
+        scope:
+      msft_dhcp_worker:
+        config:
+          package: nbl_msft_dhcp
+          MSFT_DHCP_HOST: "${msft_dns_dhcp_ip}"
+          MSFT_DHCP_USERNAME: ".\\svc-netbox"
+          MSFT_DHCP_PASSWORD: "NetBoxDHCP123!"
+          MSFT_DHCP_PORT: 5985
+          MSFT_DHCP_USE_SSL: false
+          MSFT_DHCP_VERIFY_SSL: false
+          BOOTSTRAP: True
+        scope:
+%{ endif ~}
