@@ -46,6 +46,44 @@ resource "aws_vpc_security_group_ingress_rule" "enterprise_allow_30k_in" {
   ip_protocol       = "tcp"
 }
 
+# backup credentials -- the console's backup settings form and the restore cli both take typed keys
+resource "aws_iam_user" "backup" {
+  count         = var.enable_enterprise ? 1 : 0
+  name          = "lab-backup-${data.external.whoami.result.username}"
+  force_destroy = true
+}
+
+resource "aws_iam_access_key" "backup" {
+  count = var.enable_enterprise ? 1 : 0
+  user  = aws_iam_user.backup[0].name
+}
+
+resource "aws_iam_user_policy" "backup" {
+  count = var.enable_enterprise ? 1 : 0
+  user  = aws_iam_user.backup[0].name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListMultipartUploadParts",
+          "s3:AbortMultipartUpload",
+        ]
+        Resource = ["${aws_s3_bucket.files.arn}/*"]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:ListBucket", "s3:GetBucketLocation", "s3:ListBucketMultipartUploads"]
+        Resource = [aws_s3_bucket.files.arn]
+      },
+    ]
+  })
+}
+
 resource "aws_instance" "enterprise_instance" {
   count                  = var.enable_enterprise ? 1 : 0
   ami                    = data.aws_ssm_parameter.al2023_ami_x86-64.value
@@ -67,6 +105,9 @@ resource "aws_instance" "enterprise_instance" {
     ca_cert_pem         = local.mitmproxy_ca_cert
     bucket              = aws_s3_bucket.files.id
     enable_discovery    = var.enable_discovery
+    region              = data.aws_region.current.region
+    access_key_id       = aws_iam_access_key.backup[0].id
+    secret_access_key   = aws_iam_access_key.backup[0].secret
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name

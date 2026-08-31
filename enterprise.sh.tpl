@@ -67,6 +67,15 @@ EOF
 
 chmod +x clear-deviations.sh
 
+# point disaster recovery at s3 -- what the console's backup settings form does, via the kotsadm pod's /kots
+until ./netbox-enterprise shell -c "kubectl exec -n kotsadm deploy/kotsadm -- /kots velero configure-aws-s3 access-key \
+  --namespace kotsadm \
+  --bucket ${bucket} \
+  --path nbe-backups \
+  --region ${region} \
+  --access-key-id ${access_key_id} \
+  --secret-access-key ${secret_access_key}"; do sleep 30; done
+
 %{ if enable_discovery ~}
 # mint a diode ingest credential and publish it to s3 for the orb host to fetch
 # this is the same call the Client Credentials > Add button makes in the web ui
