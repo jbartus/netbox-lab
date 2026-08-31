@@ -138,3 +138,8 @@ variable "enable_clab" {
   type    = bool
   default = false
 }
+
+variable "enable_enterprise_dr" {
+  type    = bool
+  default = false
+}

@@ -3,6 +3,7 @@ enable_community            = true
 enable_community_data       = false
 enable_ansible              = false
 enable_enterprise           = false
+enable_enterprise_dr        = false
 enable_ent_ha               = false
 enterprise_license_id       = "your-license-id"
 enterprise_console_password = "6chars"
