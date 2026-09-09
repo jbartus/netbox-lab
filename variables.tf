@@ -137,6 +137,11 @@ variable "enable_rhel" {
 variable "enable_clab" {
   type    = bool
   default = false
+  # mitmproxy caps orb's egress at the vpc cidr, which blackholes clab mgmt
+  validation {
+    condition     = !(var.enable_clab && var.enable_mitmproxy)
+    error_message = "enable_clab and enable_mitmproxy cannot both be true."
+  }
 }
 
 variable "enable_enterprise_dr" {
