@@ -91,15 +91,14 @@ EOF
 
 chmod +x scan.sh
 
-docker run -d --cap-add=IPC_LOCK -p 8200:8200 -e 'VAULT_DEV_ROOT_TOKEN_ID=dev-only-token' -e 'SKIP_SETCAP=true' hashicorp/vault
-export VAULT_ADDR='http://127.0.0.1:8200'
+docker run -d --name vault --cap-add=IPC_LOCK -p 8200:8200 -e 'VAULT_DEV_ROOT_TOKEN_ID=dev-only-token' -e 'SKIP_SETCAP=true' hashicorp/vault
 
-yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-yum -y install vault
-
-vault login dev-only-token
-vault kv put secret/cisco/v8000 password=hardcode
-vault kv put secret/arista/ceos password=admin
+# the container's own cli -- hashicorp's rpm repo serves a gpg key that no longer matches its packages
+VAULT="docker exec -e VAULT_TOKEN=dev-only-token -e VAULT_ADDR=http://127.0.0.1:8200 vault vault"
+until $VAULT status > /dev/null 2>&1; do sleep 2; done
+$VAULT kv put secret/cisco/v8000 password=hardcode
+$VAULT kv put secret/arista/ceos password=admin
+echo "alias vault='$VAULT'" >> /root/.bashrc
 
 dnf -y install nmap net-snmp-utils net-snmp-libs
 
