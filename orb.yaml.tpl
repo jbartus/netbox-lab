@@ -34,6 +34,8 @@ orb:
     device_discovery:
       device_policy:
         config:
+          defaults:
+            site: cloud-lab
         scope:
           - driver: ios
             hostname: ${c8kv_ip}
