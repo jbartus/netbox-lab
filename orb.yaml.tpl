@@ -67,7 +67,6 @@ orb:
           MSFT_DNS_PORT: 5985
           MSFT_DNS_USE_SSL: false
           MSFT_DNS_VERIFY_SSL: false
-          BOOTSTRAP: True
         scope:
       msft_dhcp_worker:
         config:
@@ -78,6 +77,5 @@ orb:
           MSFT_DHCP_PORT: 5985
           MSFT_DHCP_USE_SSL: false
           MSFT_DHCP_VERIFY_SSL: false
-          BOOTSTRAP: True
         scope:
 %{ endif ~}
