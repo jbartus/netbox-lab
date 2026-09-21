@@ -65,3 +65,28 @@ data "aws_ami" "rhel_97_ami_x86_64" {
     values = ["available"]
   }
 }
+
+data "aws_ami" "rhel_102_ami_x86_64" {
+  most_recent = true
+  owners      = ["309956199498"]
+
+  filter {
+    name   = "name"
+    values = ["RHEL-10.2*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}

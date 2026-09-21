@@ -12,8 +12,8 @@ resource "aws_vpc_security_group_egress_rule" "rhel_allow_all_out" {
 
 resource "aws_instance" "rhel_instance" {
   count                       = var.enable_rhel ? 1 : 0
-  ami                         = data.aws_ami.rhel_97_ami_x86_64.id
-  instance_type               = "m7i.large"
+  ami                         = data.aws_ami.rhel_102_ami_x86_64.id
+  instance_type               = "m8i.2xlarge"
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.rhel[0].id]
   user_data                   = file("${path.module}/rhel.sh")
