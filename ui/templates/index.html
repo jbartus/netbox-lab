@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.classless.min.css>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css>
+<script src=https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js></script>
+<script src=https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js></script>
+<script src=https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js></script>
+<script src=https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.js></script>
+<style>
+:root{--pico-font-size:112.5%}
+body{display:flex;margin:0;height:100vh}
+form{flex:1;min-width:0;padding:1em;overflow:auto;margin:0}
+#buttons{padding:1em;display:grid;gap:1em;align-content:start}
+#term{width:60%;background:#000;padding-left:1ch}
+.tabs{display:flex;gap:1.5em;border-bottom:1px solid var(--pico-muted-border-color);margin-bottom:1em}
+.tabs a{padding:.5em 0;text-decoration:none;color:var(--pico-muted-color);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a[aria-current]{color:var(--pico-primary);border-color:var(--pico-primary)}
+</style>
+</head>
+<body>
+<form hx-post=/save hx-target=#saved x-data="{tab: 'bools'}">
+<div class=tabs>
+<a href=# :aria-current="tab == 'bools'" @click.prevent="tab = 'bools'">bools</a>
+<a href=# :aria-current="tab == 'strings'" @click.prevent="tab = 'strings'">strings</a>
+<a href=# :aria-current="tab == 'status'" @click.prevent="tab = 'status'">status</a>
+</div>
+<div x-show="tab == 'bools'">
+{% for k, v in bools %}<label><input type=checkbox role=switch name="{{ k }}" {{ 'checked' if v == 'true' }}> {{ k.removeprefix('enable_') }}</label>
+{% endfor %}</div>
+<div x-show="tab == 'strings'">
+{% for k, v in strs %}<label>{{ k }}<input name="{{ k }}" value="{{ v }}"></label>
+{% endfor %}</div>
+<div x-show="tab == 'status'" hx-get=/status hx-trigger="load, every 15s" hx-target=this></div>
+<button>save</button> <span id=saved></span>
+</form>
+<div id=buttons>
+<button onclick="go('/show')">show</button>
+<button onclick="go('/plan')">plan</button>
+<button onclick="go('/apply')">apply</button>
+<button onclick="confirm('destroy everything?') && go('/destroy')">destroy</button>
+</div>
+<div id=term></div>
+<script>
+const term = new Terminal({convertEol: true, scrollback: 100000});
+const fit = new FitAddon.FitAddon();
+term.loadAddon(fit);
+term.loadAddon(new WebLinksAddon.WebLinksAddon());
+term.open(document.getElementById('term'));
+fit.fit();
+onresize = () => fit.fit();
+const box = document.getElementById('term');
+let ctl;
+async function go(url) {
+  if (ctl) ctl.abort();
+  ctl = new AbortController();
+  term.reset();
+  box.style.borderLeft = '4px solid #888';
+  const res = await fetch(url, {method: url == '/tail' ? 'GET' : 'POST', signal: ctl.signal});
+  const reader = res.body.getReader();
+  for (let r; !(r = await reader.read()).done;) term.write(r.value);
+  const rc = await (await fetch('/rc')).json();
+  box.style.borderLeft = '4px solid ' + (rc === 0 ? '#2a2' : rc === null ? '#888' : '#d33');
+}
+go('/tail');
+</script>
+</body>
+</html>

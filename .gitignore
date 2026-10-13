@@ -45,3 +45,5 @@ terraform.rc
 !.env.example
 
 clab-images/
+
+*.log
