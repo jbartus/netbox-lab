@@ -11,6 +11,7 @@ spec:
     netbox_configuration_py:
       value: |
         AUTH_PASSWORD_VALIDATORS = []
+        EVENTS_PIPELINE = ['netbox_branching.events.add_branch_context', 'extras.events.process_event_queue']
         PLUGINS=[
           "netbox_qrcode",
           "netbox_reorder_rack"

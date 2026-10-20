@@ -8,7 +8,7 @@
         port: 5000
   rules:
     - name: update interface descriptions on change 
-      condition: event.payload.event == "updated" and event.payload.model == "interface"
+      condition: event.payload.event == "updated" and event.payload.object_type == "dcim.interface"
       action:
         run_playbook:
           name: /root/int-desc.yaml
