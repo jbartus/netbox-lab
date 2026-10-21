@@ -20,20 +20,19 @@ form{flex:1;min-width:0;padding:1em;overflow:auto;margin:0}
 </style>
 </head>
 <body>
-<form hx-post=/save hx-target=#saved x-data="{tab: 'bools'}">
+<form x-data="{tab: 'bools'}" onsubmit="return false">
 <div class=tabs>
 <a href=# :aria-current="tab == 'bools'" @click.prevent="tab = 'bools'">bools</a>
 <a href=# :aria-current="tab == 'strings'" @click.prevent="tab = 'strings'">strings</a>
 <a href=# :aria-current="tab == 'status'" @click.prevent="tab = 'status'">status</a>
 </div>
 <div x-show="tab == 'bools'">
-{% for k, v in bools %}<label><input type=checkbox role=switch name="{{ k }}" {{ 'checked' if v == 'true' }}> {{ k.removeprefix('enable_') }}</label>
+{% for k, v in bools %}<label><input type=checkbox role=switch name="{{ k }}" hx-post=/save hx-swap=none {{ 'checked' if v == 'true' }}> {{ k.removeprefix('enable_') }}</label>
 {% endfor %}</div>
 <div x-show="tab == 'strings'">
-{% for k, v in strs %}<label>{{ k }}<input name="{{ k }}" value="{{ v }}"></label>
+{% for k, v in strs %}<label>{{ k }}<input name="{{ k }}" value="{{ v }}" hx-post=/save hx-trigger="input delay:1s, change" hx-swap=none></label>
 {% endfor %}</div>
 <div x-show="tab == 'status'" hx-get=/status hx-trigger="load, every 15s" hx-target=this></div>
-<button>save</button> <span id=saved></span>
 </form>
 <div id=buttons>
 <button onclick="go('/show')">show</button>
@@ -64,6 +63,10 @@ async function go(url) {
   box.style.borderLeft = '4px solid ' + (rc === 0 ? '#2a2' : rc === null ? '#888' : '#d33');
 }
 go('/tail');
+// text fields: orange while unsaved, green once saved, then back to normal
+addEventListener("input", e => { const el = e.target; if (el.type != "text") return; el.dirty = true; clearTimeout(el.t); el.style.borderColor = "orange"; });
+addEventListener("htmx:beforeRequest", e => { e.detail.elt.dirty = false; });
+addEventListener("htmx:afterRequest", e => { const el = e.detail.elt; if (el.type != "text" || el.dirty || !e.detail.successful) return; el.style.borderColor = "green"; el.t = setTimeout(() => el.style.borderColor = "", 3000); });
 </script>
 </body>
 </html>
