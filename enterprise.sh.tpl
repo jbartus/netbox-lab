@@ -117,6 +117,10 @@ until RESP=$(curl -skf -X POST https://localhost/api/users/tokens/provision/ \
 TOKEN="nbt_$(jq -r .key <<< "$RESP").$(jq -r .token <<< "$RESP")"
 nb() { curl -skf -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://localhost/api/$1" -d "$2"; }
 
+# change management policy: one admin approval required to merge a branch
+POLICY_ID=$(nb plugins/changes/policies/ '{"name": "require-approval"}' | jq -r .id)
+nb plugins/changes/policy-rules/ "{\"policy\": $POLICY_ID, \"name\": \"at-least-one-admin\", \"min_reviews\": 1, \"reviewers\": [$(jq -r .user.id <<< "$RESP")]}"
+
 %{ if enable_msft_dns_dhcp ~}
 # pre-populate the msft dhcp & dns discovery integrations's custom fields so we dont have to do the bootstrap round
 nb extras/custom-fields/ '[
