@@ -127,6 +127,10 @@ output "enterprise_ssm_command" {
   value = var.enable_enterprise ? "aws ssm start-session --target ${aws_instance.enterprise_instance[0].id}" : null
 }
 
+output "enterprise_ssm_url" {
+  value = var.enable_enterprise ? "https://${data.aws_region.current.region}.console.aws.amazon.com/systems-manager/session-manager/${aws_instance.enterprise_instance[0].id}?region=${data.aws_region.current.region}" : null
+}
+
 output "enterprise_console_url" {
   value = var.enable_enterprise ? "https://${aws_instance.enterprise_instance[0].public_ip}:30000" : null
 }

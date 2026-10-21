@@ -51,3 +51,7 @@ resource "aws_instance" "orb_instance" {
 output "orb_ssm_command" {
   value = var.enable_discovery ? "aws ssm start-session --target ${aws_instance.orb_instance[0].id}" : null
 }
+
+output "orb_ssm_url" {
+  value = var.enable_discovery ? "https://${data.aws_region.current.region}.console.aws.amazon.com/systems-manager/session-manager/${aws_instance.orb_instance[0].id}?region=${data.aws_region.current.region}" : null
+}
