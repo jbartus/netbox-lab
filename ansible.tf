@@ -26,10 +26,12 @@ resource "aws_instance" "ansible_instance" {
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.ansible[0].id]
   user_data = templatefile("${path.module}/ansible.sh.tpl", {
-    ansible_in_yaml = file("${path.module}/ansible-in.yaml")
-    rulebook_yaml   = file("${path.module}/rulebook.yaml")
-    int_desc_yaml   = file("${path.module}/int-desc.yaml")
-    c8kv_ip         = aws_instance.c8kv_instance[0].private_ip
+    ansible_in_yaml   = file("${path.module}/ansible-in.yaml")
+    rulebook_yaml     = file("${path.module}/rulebook.yaml")
+    int_desc_yaml     = file("${path.module}/int-desc.yaml")
+    c8kv_ip           = aws_instance.c8kv_instance[0].private_ip
+    bucket            = aws_s3_bucket.files.id
+    enable_enterprise = var.enable_enterprise
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name

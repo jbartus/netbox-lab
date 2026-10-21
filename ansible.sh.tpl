@@ -23,16 +23,6 @@ device_query_filters:
   - platform: ios
 EOF
 
-mkdir group_vars
-cat << 'EOF' > group_vars/all.yaml
----
-ansible_user: iosuser
-ansible_password: Hardcode12345
-ansible_become: yes
-ansible_become_method: enable
-ansible_network_os: cisco.ios.ios
-EOF
-
 cat << 'EOF' > ansible-in.yaml
 ${ansible_in_yaml}
 EOF
@@ -51,11 +41,11 @@ EOF
 echo ${c8kv_ip} > inventory
 
 cat << 'EOF' > /etc/systemd/system/ansible-rulebook.service
-# /etc/systemd/system/ansible-rulebook.service
 [Unit]
 Description=Ansible Rulebook
 
 [Service]
+EnvironmentFile=-/root/netbox.env
 ExecStart=/usr/local/bin/ansible-rulebook --rulebook /root/rulebook.yaml -i /root/inventory -vvv
 Restart=always
 
@@ -63,5 +53,12 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-sudo systemctl daemon-reload
-sudo systemctl enable --now ansible-rulebook
+systemctl daemon-reload
+systemctl enable --now ansible-rulebook
+
+%{ if enable_enterprise ~}
+# wait for the enterprise host to publish its admin api token, then hand it to playbooks and the rulebook
+until aws s3 cp "s3://${bucket}/netbox.env" /root/netbox.env; do sleep 30; done
+echo 'set -a; . /root/netbox.env; set +a' >> /root/.bashrc
+systemctl restart ansible-rulebook
+%{ endif ~}

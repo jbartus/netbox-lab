@@ -107,6 +107,8 @@ resource "aws_instance" "enterprise_instance" {
     bucket               = aws_s3_bucket.files.id
     enable_discovery     = var.enable_discovery
     enable_msft_dns_dhcp = var.enable_msft_dns_dhcp
+    enable_ansible       = var.enable_ansible
+    ansible_ip           = var.enable_ansible ? aws_instance.ansible_instance[0].private_ip : ""
     region               = data.aws_region.current.region
     access_key_id        = aws_iam_access_key.backup[0].id
     secret_access_key    = aws_iam_access_key.backup[0].secret
