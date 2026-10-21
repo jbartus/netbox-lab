@@ -109,50 +109,32 @@ EOF
 aws s3 cp diode.env "s3://${bucket}/diode.env"
 %{ endif ~}
 
+# admin api token for post-install setup -- retry until netbox answers
+dnf -y install jq
+until RESP=$(curl -skf -X POST https://localhost/api/users/tokens/provision/ \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"${enterprise_admin_password}"}'); do sleep 30; done
+TOKEN="nbt_$(jq -r .key <<< "$RESP").$(jq -r .token <<< "$RESP")"
+nb() { curl -skf -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://localhost/api/$1" -d "$2"; }
+
 %{ if enable_msft_dns_dhcp ~}
 # pre-populate the msft dhcp & dns discovery integrations's custom fields so we dont have to do the bootstrap round
-cat << 'EOF' > msft-custom-fields.py
-from extras.models import CustomField
-
-# whatever the m2m points at on this release -- ContentType or core.ObjectType
-OT = CustomField._meta.get_field("object_types").related_model
-
-FIELDS = [
-    ("msft_dns_additional_names", "json", "ipaddress", "Microsoft DNS Additional Names",
-     "Additional DNS names pointing to this IP address"),
-    ("dhcp_server", "text", "prefix", "DHCP Server",
-     "Source DHCP server hostname or IP that this scope was synced from"),
-    ("msft_dhcp_scope_name", "text", "prefix", "MS DHCP Scope Name",
-     "Microsoft DHCP scope display name"),
-    ("msft_dhcp_scope_state", "text", "prefix", "MS DHCP Scope State",
-     "Microsoft DHCP scope state (e.g. Active, Inactive)"),
-    ("msft_dhcp_scope_start_range", "text", "prefix", "MS DHCP Scope Start Range",
-     "First address in the Microsoft DHCP scope range"),
-    ("msft_dhcp_scope_end_range", "text", "prefix", "MS DHCP Scope End Range",
-     "Last address in the Microsoft DHCP scope range"),
-    ("msft_dhcp_lease_duration_seconds", "integer", "prefix", "MS DHCP Lease Duration (seconds)",
-     "Microsoft DHCP scope lease duration in seconds"),
-    ("msft_dhcp_options", "json", "prefix", "MS DHCP Options",
-     "Microsoft DHCP scope-level option values as reported by Get-DhcpServerv4OptionValue. "
-     "List of objects with OptionId, Name, Type, Value."),
-]
-
-for name, cf_type, model, label, description in FIELDS:
-    cf, _ = CustomField.objects.update_or_create(
-        name=name,
-        defaults={
-            "type": cf_type,
-            "label": label,
-            "description": description,
-            "required": False,
-            "ui_editable": "no",
-        },
-    )
-    cf.object_types.set([OT.objects.get(app_label="ipam", model=model)])
-    print("CUSTOM_FIELD", cf.name)
-EOF
-
-export KUBECONFIG=/var/lib/embedded-cluster/k0s/pki/admin.conf
-export PATH=/var/lib/embedded-cluster/bin:$PATH
-until kubectl exec -i -n kotsadm deploy/netbox-netbox -c netbox -- /opt/netbox/netbox/manage.py shell < msft-custom-fields.py; do sleep 30; done
+nb extras/custom-fields/ '[
+  {"name": "msft_dns_additional_names", "type": "json", "object_types": ["ipam.ipaddress"], "ui_editable": "no",
+   "label": "Microsoft DNS Additional Names", "description": "Additional DNS names pointing to this IP address"},
+  {"name": "dhcp_server", "type": "text", "object_types": ["ipam.prefix"], "ui_editable": "no",
+   "label": "DHCP Server", "description": "Source DHCP server hostname or IP that this scope was synced from"},
+  {"name": "msft_dhcp_scope_name", "type": "text", "object_types": ["ipam.prefix"], "ui_editable": "no",
+   "label": "MS DHCP Scope Name", "description": "Microsoft DHCP scope display name"},
+  {"name": "msft_dhcp_scope_state", "type": "text", "object_types": ["ipam.prefix"], "ui_editable": "no",
+   "label": "MS DHCP Scope State", "description": "Microsoft DHCP scope state (e.g. Active, Inactive)"},
+  {"name": "msft_dhcp_scope_start_range", "type": "text", "object_types": ["ipam.prefix"], "ui_editable": "no",
+   "label": "MS DHCP Scope Start Range", "description": "First address in the Microsoft DHCP scope range"},
+  {"name": "msft_dhcp_scope_end_range", "type": "text", "object_types": ["ipam.prefix"], "ui_editable": "no",
+   "label": "MS DHCP Scope End Range", "description": "Last address in the Microsoft DHCP scope range"},
+  {"name": "msft_dhcp_lease_duration_seconds", "type": "integer", "object_types": ["ipam.prefix"], "ui_editable": "no",
+   "label": "MS DHCP Lease Duration (seconds)", "description": "Microsoft DHCP scope lease duration in seconds"},
+  {"name": "msft_dhcp_options", "type": "json", "object_types": ["ipam.prefix"], "ui_editable": "no",
+   "label": "MS DHCP Options", "description": "Microsoft DHCP scope-level option values as reported by Get-DhcpServerv4OptionValue. List of objects with OptionId, Name, Type, Value."}
+]'
 %{ endif ~}
