@@ -6,7 +6,7 @@ set -xeuo pipefail
 dnf install -y gcc libxml2-devel libxslt-devel libffi-devel libpq-devel openssl-devel redhat-rpm-config
 
 # postgresql
-dnf install -y postgresql17-server
+dnf install -y postgresql17-server postgresql17-contrib
 postgresql-setup --initdb
 sed -i 's/^host\s\+all\s\+all\s\+\(.*\)\sident/host\tall\t\tall\t\t\1 md5/' /var/lib/pgsql/data/pg_hba.conf 
 systemctl enable --now postgresql
@@ -76,8 +76,8 @@ sudo -u postgres psql -c "CREATE database netbox;"
 sudo -u postgres psql -c "ALTER DATABASE netbox OWNER TO netbox;"
 sudo -u postgres psql -d netbox -c "GRANT CREATE ON SCHEMA public TO netbox;"
 
-wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.6.sql
-sudo -u postgres psql netbox < netbox-demo-v4.6.sql
+wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.7.sql
+sudo -u postgres psql netbox < netbox-demo-v4.7.sql
 
 systemctl start redis6
 systemctl start netbox
