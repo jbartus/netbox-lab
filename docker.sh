@@ -16,6 +16,7 @@ cd netbox-docker
 cp docker-compose.override.yml.example docker-compose.override.yml
 sed -i 's/^    # environment:/    environment:/' docker-compose.override.yml
 sed -i 's/^      # SKIP_SUPERUSER: "false"/      SKIP_SUPERUSER: "false"/' docker-compose.override.yml
+sed -i 's/^      # SUPERUSER_PASSWORD: ""/      SUPERUSER_PASSWORD: "admin"/' docker-compose.override.yml
 
 docker compose pull
 docker compose up -d
