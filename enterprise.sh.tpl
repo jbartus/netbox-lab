@@ -121,6 +121,13 @@ nb() { curl -skf -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: app
 POLICY_ID=$(nb plugins/changes/policies/ '{"name": "require-approval"}' | jq -r .id)
 nb plugins/changes/policy-rules/ "{\"policy\": $POLICY_ID, \"name\": \"at-least-one-admin\", \"min_reviews\": 1, \"reviewers\": [$(jq -r .user.id <<< "$RESP")]}"
 
+# hand the api token to the ansible and orb hosts, which wait for this file
+cat << EOF > netbox.env
+NETBOX_API=https://$(hostname -I | awk '{print $1}')/
+NETBOX_TOKEN=$TOKEN
+EOF
+aws s3 cp netbox.env "s3://${bucket}/netbox.env"
+
 %{ if enable_ansible ~}
 # gi1 description changes on main (incl. branch merges, via EVENTS_PIPELINE) get pushed to the c8kv by the ansible rulebook
 WEBHOOK_ID=$(nb extras/webhooks/ '{"name": "ansible-eda", "payload_url": "http://${ansible_ip}:5000/endpoint",
@@ -128,13 +135,6 @@ WEBHOOK_ID=$(nb extras/webhooks/ '{"name": "ansible-eda", "payload_url": "http:/
 nb extras/event-rules/ '{"name": "gi1-desc-to-ansible", "object_types": ["dcim.interface"], "event_types": ["object_updated"],
   "conditions": {"and": [{"attr": "name", "value": "GigabitEthernet1"}, {"attr": "active_branch", "value": null}]},
   "action_type": "webhook", "action_object_type": "extras.webhook", "action_object_id": '"$WEBHOOK_ID"'}'
-
-# hand the api token to the ansible host, which waits for this file
-cat << EOF > netbox.env
-NETBOX_API=https://$(hostname -I | awk '{print $1}')/
-NETBOX_TOKEN=$TOKEN
-EOF
-aws s3 cp netbox.env "s3://${bucket}/netbox.env"
 %{ endif ~}
 
 %{ if enable_msft_dns_dhcp ~}

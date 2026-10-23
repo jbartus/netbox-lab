@@ -19,6 +19,15 @@ resource "aws_vpc_security_group_egress_rule" "orb_allow_vpc_out" {
   ip_protocol       = "-1"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "orb_allow_grafana_in" {
+  count             = var.enable_discovery ? 1 : 0
+  security_group_id = aws_security_group.orb[0].id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 3000
+  to_port           = 3000
+  ip_protocol       = "tcp"
+}
+
 resource "aws_instance" "orb_instance" {
   count                  = var.enable_discovery ? 1 : 0
   ami                    = data.aws_ssm_parameter.al2023_ami_arm64.value
@@ -32,12 +41,19 @@ resource "aws_instance" "orb_instance" {
     proxy_url   = local.mitmproxy_proxy_url
     ca_cert_pem = local.mitmproxy_ca_cert
     bucket      = aws_s3_bucket.files.id
+    # waits for enterprise's api token to give grafana a netbox data source
+    enable_enterprise = var.enable_enterprise
     orb_yaml = templatefile("${path.module}/orb.yaml.tpl", {
       public_subnet    = module.vpc.public_subnet_objects[0].cidr_block
       c8kv_ip          = aws_instance.c8kv_instance[0].private_ip
       msft_dns_dhcp_ip = var.enable_msft_dns_dhcp ? aws_instance.msft_dns_dhcp_instance[0].private_ip : ""
       enable_clab      = var.enable_clab
     })
+    telemetry_yaml = templatefile("${path.module}/orb-telemetry.yaml.tpl", {
+      c8kv_ip     = aws_instance.c8kv_instance[0].private_ip
+      enable_clab = var.enable_clab
+    })
+    telemetry_dashboard = file("${path.module}/grafana-telemetry.json")
   })
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
@@ -50,6 +66,10 @@ resource "aws_instance" "orb_instance" {
 
 output "orb_ssm_command" {
   value = var.enable_discovery ? "aws ssm start-session --target ${aws_instance.orb_instance[0].id}" : null
+}
+
+output "grafana_url" {
+  value = var.enable_discovery ? "http://${aws_instance.orb_instance[0].public_ip}:3000" : null
 }
 
 output "orb_ssm_url" {

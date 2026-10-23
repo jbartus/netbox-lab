@@ -28,10 +28,13 @@ topology:
       kind: linux
       exec:
         - ip addr add 10.10.10.11/24 dev eth1
+        # clab's default 9500 is over cEOS's 9214, so full-size tcp segments are silently dropped
+        - ip link set eth1 mtu 9000
     host2:
       kind: linux
       exec:
         - ip addr add 10.10.10.12/24 dev eth1
+        - ip link set eth1 mtu 9000
 
   links:
     - endpoints: ["spine1:eth1", "leaf1:eth1"]

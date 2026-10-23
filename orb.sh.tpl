@@ -100,6 +100,47 @@ $VAULT kv put secret/cisco/v8000 password=hardcode
 $VAULT kv put secret/arista/ceos password=admin
 echo "alias vault='$VAULT'" >> /root/.bashrc
 
+# grafana, prometheus and an otel collector in one container, with the telemetry dashboard as its home page
+mkdir -p grafana
+cat << 'EOF' > grafana/telemetry.json
+${telemetry_dashboard}
+EOF
+cat << 'EOF' > grafana/dashboards.yaml
+apiVersion: 1
+providers:
+  - name: lab
+    type: file
+    options:
+      path: /otel-lgtm/grafana/conf/provisioning/dashboards/lab
+EOF
+docker run -d --name lgtm --restart unless-stopped -p 3000:3000 -p 4317:4317 \
+  -e GF_PLUGINS_PREINSTALL=netboxlabs-netbox-datasource \
+  -e GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s \
+  -e GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/otel-lgtm/grafana/conf/provisioning/dashboards/lab/telemetry.json \
+  -v $${PWD}/grafana/telemetry.json:/otel-lgtm/grafana/conf/provisioning/dashboards/lab/telemetry.json:ro \
+  -v $${PWD}/grafana/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/lab.yaml:ro \
+  grafana/otel-lgtm:0.37.0
+
+%{ if enable_enterprise ~}
+# once enterprise publishes its api token, give grafana a netbox data source -- in the background, nbe takes a while
+(
+  until aws s3 cp --quiet "s3://${bucket}/netbox.env" netbox.env; do sleep 30; done
+  . ./netbox.env
+  until curl -sf -u admin:admin -H 'Content-Type: application/json' http://localhost:3000/api/datasources -d @- << EOF
+{"name": "NetBox", "type": "netboxlabs-netbox-datasource", "access": "proxy",
+ "jsonData": {"url": "$NETBOX_API", "tlsSkipVerify": true}, "secureJsonData": {"apiToken": "$NETBOX_TOKEN"}}
+EOF
+  do sleep 10; done
+) > /dev/null 2>&1 &
+%{ endif ~}
+
+# telemetry gets its own always-on agent; the discovery one above waits for scan.sh and diode credentials
+cat << 'EOF' > telemetry.yaml
+${telemetry_yaml}
+EOF
+docker run -d --name orb-telemetry --restart unless-stopped --net host -v $${PWD}:/opt/orb/ \
+  netboxlabs/orb-agent:2.16.0 run --config /opt/orb/telemetry.yaml
+
 dnf -y install nmap net-snmp-utils net-snmp-libs
 
 # setup a venv and install diode sdk (which requires python >3.10)

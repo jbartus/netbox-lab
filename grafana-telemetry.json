@@ -1,0 +1,56 @@
+{
+  "title": "lab telemetry",
+  "uid": "lab-telemetry",
+  "schemaVersion": 39,
+  "refresh": "1s",
+  "timepicker": {"refresh_intervals": ["1s", "5s", "10s", "30s", "1m"]},
+  "time": {"from": "now-5m", "to": "now"},
+  "panels": [
+    {
+      "type": "stat",
+      "title": "devices reporting",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "gnmi_target_up", "legendFormat": "{{device_ip}} (gnmi)"},
+        {"refId": "B", "expr": "count by (device_ip) (snmp_if_operstatus) > bool 0", "legendFormat": "{{device_ip}} (snmp)"}
+      ],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "down", "color": "red"}, "1": {"text": "up", "color": "green"}}}]}},
+      "options": {"colorMode": "background", "textMode": "value_and_name"}
+    },
+    {
+      "type": "state-timeline",
+      "title": "interface oper status",
+      "gridPos": {"x": 0, "y": 4, "w": 24, "h": 12},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "gnmi_if_oper_status", "legendFormat": "{{device_ip}} {{interface_name}}"},
+        {"refId": "B", "expr": "snmp_if_operstatus", "legendFormat": "{{device_ip}} {{if_Description}}"}
+      ],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "down", "color": "red"}, "1": {"text": "up", "color": "green"}, "2": {"text": "down", "color": "red"}}}]}},
+      "options": {"showValue": "never"}
+    },
+    {
+      "type": "timeseries",
+      "title": "inbound",
+      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "rate(gnmi_if_in_octets_bytes_total[10s]) * 8", "legendFormat": "{{device_ip}} {{interface_name}}"},
+        {"refId": "B", "expr": "rate(snmp_ifhcinoctets[3m]) * 8", "legendFormat": "{{device_ip}} {{if_Description}}"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "bps"}}
+    },
+    {
+      "type": "timeseries",
+      "title": "outbound",
+      "gridPos": {"x": 12, "y": 16, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "rate(gnmi_if_out_octets_bytes_total[10s]) * 8", "legendFormat": "{{device_ip}} {{interface_name}}"},
+        {"refId": "B", "expr": "rate(snmp_ifhcoutoctets[3m]) * 8", "legendFormat": "{{device_ip}} {{if_Description}}"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "bps"}}
+    }
+  ]
+}
