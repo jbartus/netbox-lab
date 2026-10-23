@@ -92,6 +92,12 @@ def locked():
     return {v for addr, text in blocks().items() if addr in deployed for v in re.findall(r"var\.(\w+)", text)}
 
 
+@app.get("/values")
+def values():
+    _, bools, strs = parse()
+    return {k: v == "true" for k, v in bools} | dict(strs)
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     _, bools, strs = parse()

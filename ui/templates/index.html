@@ -96,7 +96,6 @@ async function go(url) {
   const reader = res.body.getReader();
   for (let r; !(r = await reader.read()).done;) term.write(r.value);
   busy(null);
-  lock();
   hosts();
   const finished = await last();
   if (finished && finished.rc !== 0) termtab.style.cssText = 'color:#d33;font-weight:bold';
@@ -113,14 +112,21 @@ async function last() {
 function busy(cmd) {
   document.querySelectorAll('#buttons button').forEach(b => b.setAttribute('aria-busy', b.id === cmd));
 }
-// anything feeding what's deployed stays greyed out until a destroy; rechecked after every run
-async function lock() {
+// once a second the form catches up with tfvars (it may be edited outside this page), and anything feeding
+// what's deployed stays greyed out until a destroy
+async function sync() {
   const names = await (await fetch('/locked')).json();
+  const vals = await (await fetch('/values')).json();
   document.querySelectorAll('form input').forEach(el => {
+    if (el.classList.contains('htmx-request')) return;  // its own save is still in flight
+    if (el.type == 'checkbox') el.checked = vals[el.name];
+    else if (!el.dirty && el !== document.activeElement) el.value = vals[el.name];
     el.disabled = names.includes(el.name);
     el.title = el.disabled ? 'deployed: destroy to change' : '';
   });
 }
+sync();
+setInterval(sync, 1000);
 go('/tail');
 
 // shell tab: a view of the host's tmux session on the server, so a reload re-attaches instead of starting over
