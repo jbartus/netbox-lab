@@ -9,6 +9,7 @@ import json
 import os
 import pty
 import re
+import shutil
 import signal
 import struct
 import subprocess
@@ -138,6 +139,12 @@ async def shell(ws: WebSocket, host: str):
     if not same_origin(ws.headers):
         return await ws.close()  # before accept, so the handshake is refused
     await ws.accept()
+    # say what's missing in the tab itself, instead of the session just closing
+    installs = {"tmux": "brew install tmux", "session-manager-plugin": "brew install --cask session-manager-plugin"}
+    if missing := [tool for tool in installs if not shutil.which(tool)]:
+        fix = "; ".join(installs[tool] for tool in missing)
+        await ws.send_bytes(f"the shell tab needs {' and '.join(missing)}: {fix}\r\n".encode())
+        return await ws.close()
     cmd = hosts().get(host)
     if cmd is None:
         return await ws.close()
