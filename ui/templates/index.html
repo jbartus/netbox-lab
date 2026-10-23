@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+<title>netbox lab ui</title>
 <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.classless.min.css>
 <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css>
 <script src=https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js></script>
@@ -10,21 +11,40 @@
 <script src=https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.js></script>
 <style>
 :root{--pico-font-size:112.5%}
+input:not([type=checkbox]){--pico-form-element-spacing-vertical:.5rem;margin-bottom:.75rem}
 body{display:flex;margin:0;height:100vh}
-form{flex:1;min-width:0;padding:1em;overflow:auto;margin:0}
-#buttons{padding:1em;display:grid;gap:1em;align-content:start}
-#term{width:60%;background:#000;padding-left:1ch}
+#left{flex:1;min-width:0;display:flex;flex-direction:column}
+form{flex:1;min-height:0;padding:1em;overflow:auto;margin:0}
+#buttons{padding:1em 1em 0;display:flex;gap:1em}
+#right{width:66%;display:flex;flex-direction:column;padding-top:1em}
+#right .tabs{margin:0 1em}
+#panes{flex:1;min-height:0;position:relative}
+#output{position:absolute;inset:0;z-index:1;overflow:auto;padding:1em;background:var(--pico-background-color)}
+#refresh{position:absolute;top:1em;right:1em}
+#term{height:100%;background:#000}
+#shell{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;background:#000}
+#shell .tabs{margin:.5em 1em;border-bottom:none}
+#shellterm{flex:1;min-height:0}
+/* padding goes on xterm's own element, the one the fit addon subtracts when sizing */
+#term .xterm{padding:.5em 0 0 1ch}
+#shellterm .xterm{padding-left:1ch}
 .tabs{display:flex;gap:1.5em;border-bottom:1px solid var(--pico-muted-border-color);margin-bottom:1em}
 .tabs a{padding:.5em 0;text-decoration:none;color:var(--pico-muted-color);border-bottom:2px solid transparent;margin-bottom:-1px}
 .tabs a[aria-current]{color:var(--pico-primary);border-color:var(--pico-primary)}
 </style>
 </head>
 <body>
+<div id=left>
+<div id=buttons>
+<button id=show onclick="go('/show')">show</button>
+<button id=plan onclick="go('/plan')">plan</button>
+<button id=apply onclick="go('/apply')">apply</button>
+<button id=destroy onclick="confirm('destroy everything?') && go('/destroy')">destroy</button>
+</div>
 <form x-data="{tab: 'bools'}" onsubmit="return false">
 <div class=tabs>
 <a href=# :aria-current="tab == 'bools'" @click.prevent="tab = 'bools'">bools</a>
 <a href=# :aria-current="tab == 'strings'" @click.prevent="tab = 'strings'">strings</a>
-<a href=# :aria-current="tab == 'status'" @click.prevent="tab = 'status'">status</a>
 </div>
 <div x-show="tab == 'bools'">
 {% for k, v in bools %}<label><input type=checkbox role=switch name="{{ k }}" hx-post=/save hx-swap=none {{ 'checked' if v == 'true' }}> {{ k.removeprefix('enable_') }}</label>
@@ -32,41 +52,138 @@ form{flex:1;min-width:0;padding:1em;overflow:auto;margin:0}
 <div x-show="tab == 'strings'">
 {% for k, v in strs %}<label>{{ k }}<input name="{{ k }}" value="{{ v }}" hx-post=/save hx-trigger="input delay:1s, change" hx-swap=none></label>
 {% endfor %}</div>
-<div x-show="tab == 'status'" hx-get=/status hx-trigger="load, every 15s" hx-target=this></div>
 </form>
-<div id=buttons>
-<button onclick="go('/show')">show</button>
-<button onclick="go('/plan')">plan</button>
-<button onclick="go('/apply')">apply</button>
-<button onclick="confirm('destroy everything?') && go('/destroy')">destroy</button>
+</div>
+<div id=right x-data="{tab: 'terminal'}">
+<div class=tabs>
+<a href=# id=termtab :aria-current="tab == 'terminal'" @click.prevent="tab = 'terminal'">terminal</a>
+<a href=# :aria-current="tab == 'output'" @click.prevent="tab = 'output'">output</a>
+<a href=# :aria-current="tab == 'shell'" @click.prevent="tab = 'shell'; hosts(); shterm.focus()">shell</a>
+</div>
+<div id=panes>
+<!-- output covers the terminal rather than the terminal being hidden, so xterm always has a real size to fit to -->
+<div id=output x-show="tab == 'output'">
+<a href=# id=refresh title=refresh hx-get=/output hx-target=#output-list><svg width=20 height=20 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></a>
+<div id=output-list hx-get=/output hx-trigger="load, every 15s"></div>
 </div>
 <div id=term></div>
+<!-- hidden with visibility rather than x-show for the same reason -->
+<div id=shell :style="{visibility: tab == 'shell' ? 'visible' : 'hidden'}">
+<div class=tabs id=hosttabs></div>
+<div id=shellterm></div>
+</div>
+</div>
+</div>
 <script>
+// terraform runs: the buttons stream output into the terminal tab
 const term = new Terminal({convertEol: true, scrollback: 100000});
 const fit = new FitAddon.FitAddon();
 term.loadAddon(fit);
 term.loadAddon(new WebLinksAddon.WebLinksAddon());
 term.open(document.getElementById('term'));
 fit.fit();
-onresize = () => fit.fit();
-const box = document.getElementById('term');
+const termtab = document.getElementById('termtab');
 let ctl;
 async function go(url) {
   if (ctl) ctl.abort();
   ctl = new AbortController();
   term.reset();
-  box.style.borderLeft = '4px solid #888';
+  termtab.style.cssText = '';
+  busy(null);
   const res = await fetch(url, {method: url == '/tail' ? 'GET' : 'POST', signal: ctl.signal});
+  const started = await last();
+  busy(started?.rc === null ? started.cmd : null);
   const reader = res.body.getReader();
   for (let r; !(r = await reader.read()).done;) term.write(r.value);
-  const rc = await (await fetch('/rc')).json();
-  box.style.borderLeft = '4px solid ' + (rc === 0 ? '#2a2' : rc === null ? '#888' : '#d33');
+  busy(null);
+  lock();
+  hosts();
+  const finished = await last();
+  if (finished && finished.rc !== 0) termtab.style.cssText = 'color:#d33;font-weight:bold';
+  // an apply watched through to success goes straight to its outputs (not one that had already finished at page load)
+  if (started?.rc === null && finished?.cmd === 'apply' && finished.rc === 0) {
+    htmx.ajax('GET', '/output', '#output-list');
+    Alpine.$data(document.getElementById('right')).tab = 'output';
+  }
+}
+async function last() {
+  return (await fetch('/last')).json();
+}
+// spinner on the button of what the server is actually running, which after a mid-run click or a reload isn't necessarily the one clicked
+function busy(cmd) {
+  document.querySelectorAll('#buttons button').forEach(b => b.setAttribute('aria-busy', b.id === cmd));
+}
+// anything feeding what's deployed stays greyed out until a destroy; rechecked after every run
+async function lock() {
+  const names = await (await fetch('/locked')).json();
+  document.querySelectorAll('form input').forEach(el => {
+    el.disabled = names.includes(el.name);
+    el.title = el.disabled ? 'deployed: destroy to change' : '';
+  });
 }
 go('/tail');
+
+// shell tab: a view of the host's tmux session on the server, so a reload re-attaches instead of starting over
+const shterm = new Terminal({macOptionClickForcesSelection: true});
+const shfit = new FitAddon.FitAddon();
+shterm.loadAddon(shfit);
+shterm.loadAddon(new WebLinksAddon.WebLinksAddon());
+shterm.open(document.getElementById('shellterm'));
+shfit.fit();
+let ws, host;
+function size() {
+  shfit.fit();
+  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({cols: shterm.cols, rows: shterm.rows}));
+}
+function mark() {
+  document.querySelectorAll('#hosttabs a').forEach(a => a.toggleAttribute('aria-current', a.textContent === host));
+}
+function connect(h) {
+  host = h;
+  mark();
+  if (ws) { ws.onclose = null; ws.close(); }
+  shterm.reset();
+  if (!h) return shterm.write('no running hosts');
+  ws = new WebSocket(`ws://${location.host}/shell/${h}`);
+  ws.binaryType = 'arraybuffer';
+  ws.onopen = size;
+  ws.onmessage = e => shterm.write(new Uint8Array(e.data));
+  ws.onclose = () => shterm.write('\r\n[session closed]\r\n');
+}
+shterm.onData(d => ws?.readyState === WebSocket.OPEN && ws.send(new TextEncoder().encode(d)));
+// a sub-tab per running host, rebuilt after every run; stays on the current host if it's still up, else
+// connects to the first one, so whatever an apply starts is connected without a click
+async function hosts() {
+  const names = Object.keys(await (await fetch('/hosts')).json());
+  document.getElementById('hosttabs').replaceChildren(...names.map(h => {
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = h;
+    a.onclick = e => { e.preventDefault(); connect(h); shterm.focus(); };
+    return a;
+  }));
+  if (names.includes(host)) mark();
+  else connect(names[0]);
+}
+hosts();
+
+onresize = () => { fit.fit(); size(); };
+
 // text fields: orange while unsaved, green once saved, then back to normal
-addEventListener("input", e => { const el = e.target; if (el.type != "text") return; el.dirty = true; clearTimeout(el.t); el.style.borderColor = "orange"; });
-addEventListener("htmx:beforeRequest", e => { e.detail.elt.dirty = false; });
-addEventListener("htmx:afterRequest", e => { const el = e.detail.elt; if (el.type != "text" || el.dirty || !e.detail.successful) return; el.style.borderColor = "green"; el.t = setTimeout(() => el.style.borderColor = "", 3000); });
+addEventListener('input', e => {
+  const el = e.target;
+  if (el.type != 'text') return;
+  el.dirty = true;
+  clearTimeout(el.t);
+  el.style.borderColor = 'orange';
+});
+addEventListener('htmx:beforeRequest', e => { e.detail.elt.dirty = false; });
+addEventListener('htmx:afterRequest', e => {
+  const el = e.detail.elt;
+  if (el.type != 'text' || el.dirty || !e.detail.successful) return;
+  el.style.borderColor = 'green';
+  el.t = setTimeout(() => el.style.borderColor = '', 3000);
+});
 </script>
 </body>
 </html>
