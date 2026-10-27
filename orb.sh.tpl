@@ -159,7 +159,7 @@ set -euo pipefail
 source .venv/bin/activate
 
 # load env vars
-source .env
+set -a; source .env; set +a
 
 # run dryrun_replay.py with the files passed as arguments
 python .venv/lib/python3.12/site-packages/netboxlabs/diode/scripts/dryrun_replay.py \

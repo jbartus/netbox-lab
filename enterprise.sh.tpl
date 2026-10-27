@@ -98,9 +98,10 @@ CLIENT_SECRET=$(awk '/^CLIENT_SECRET/ {print $2}' <<< "$MINT_OUTPUT")
 # (with the proxy, TLS by name -- mitmproxy needs a name to mint a cert for)
 cat << EOF > diode.env
 %{ if proxy_url != "" ~}
-DIODE_SERVER=grpcs://$(hostname -f):443/diode
+DIODE_SERVER=grpcs://$(hostname -f)/diode
 %{ else ~}
-DIODE_SERVER=grpc://$(hostname -I | awk '{print $1}'):80/diode
+DIODE_SERVER=grpcs://$(hostname -I | awk '{print $1}')/diode
+DIODE_SKIP_TLS_VERIFY=true
 %{ endif ~}
 DIODE_CLIENT_ID=$CLIENT_ID
 DIODE_CLIENT_SECRET=$CLIENT_SECRET
