@@ -1,19 +1,16 @@
-variable "enable_docker" {
-  type    = bool
-  default = false
+variable "aap_admin_password" {
+  type      = string
+  sensitive = true
+  default   = ""
 }
 
-variable "enable_mitmproxy" {
-  type    = bool
-  default = false
+variable "catcenter_ssh_password" {
+  type        = string
+  sensitive   = true
+  description = "Password for the Catalyst Center maglev (SSH) user."
 }
 
-variable "enable_community" {
-  type    = bool
-  default = false
-}
-
-variable "enable_community_data" {
+variable "enable_aap" {
   type    = bool
   default = false
 }
@@ -23,113 +20,7 @@ variable "enable_ansible" {
   default = false
 }
 
-variable "enable_enterprise" {
-  type    = bool
-  default = false
-}
-
-variable "enable_ent_ha" {
-  type    = bool
-  default = false
-}
-
-variable "enterprise_license_id" {
-  type        = string
-  sensitive   = true
-  description = "License ID supplied by Netbox Labs for your NetBox Enterprise instance."
-  validation {
-    condition     = length(var.enterprise_license_id) > 0
-    error_message = "NetBox Enterprise License ID must not be empty."
-  }
-}
-
-variable "enterprise_console_password" {
-  type        = string
-  sensitive   = true
-  description = "A password of at least 6 characters for the NetBox Enterprise console user."
-  validation {
-    condition     = length(var.enterprise_console_password) >= 6
-    error_message = "NetBox Enterprise console password must be at least 6 characters long."
-  }
-}
-
-variable "enterprise_admin_password" {
-  type        = string
-  sensitive   = true
-  description = "A password of at least 12 characters for the NetBox Enterprise admin user."
-  validation {
-    condition     = length(var.enterprise_admin_password) >= 12
-    error_message = "NetBox Enterprise admin password must be at least 12 characters long."
-  }
-}
-
-variable "enable_discovery" {
-  type    = bool
-  default = false
-}
-
-variable "enable_msft_dns_dhcp" {
-  type    = bool
-  default = false
-}
-
-variable "nbl_registry_user" {
-  type      = string
-  sensitive = true
-}
-
-variable "nbl_registry_token" {
-  type      = string
-  sensitive = true
-}
-
 variable "enable_catcenter" {
-  type    = bool
-  default = false
-}
-
-variable "catcenter_ssh_password" {
-  type        = string
-  sensitive   = true
-  description = "Password for the Catalyst Center maglev (SSH) user."
-}
-
-variable "enable_ldap" {
-  type    = bool
-  default = false
-}
-
-variable "enable_saml" {
-  type    = bool
-  default = false
-}
-
-variable "enable_eks" {
-  type    = bool
-  default = false
-}
-
-variable "enable_postgres" {
-  type    = bool
-  default = false
-}
-
-variable "postgres_password" {
-  type        = string
-  sensitive   = true
-  description = "A password of at least 8 characters for the PostgreSQL database."
-  validation {
-    condition     = length(var.postgres_password) >= 8
-    error_message = "PostgreSQL password must be at least 8 characters long."
-  }
-}
-
-variable "enable_ubuntu" {
-  type    = bool
-  default = false
-}
-
-variable "enable_rhel" {
   type    = bool
   default = false
 }
@@ -144,20 +35,129 @@ variable "enable_clab" {
   }
 }
 
+variable "enable_community" {
+  type    = bool
+  default = false
+}
+
+variable "enable_community_data" {
+  type    = bool
+  default = false
+}
+
+variable "enable_discovery" {
+  type    = bool
+  default = false
+}
+
+variable "enable_docker" {
+  type    = bool
+  default = false
+}
+
+variable "enable_eks" {
+  type    = bool
+  default = false
+}
+
+variable "enable_ent_ha" {
+  type    = bool
+  default = false
+}
+
+variable "enable_enterprise" {
+  type    = bool
+  default = false
+}
+
 variable "enable_enterprise_dr" {
   type    = bool
   default = false
 }
 
-variable "enable_aap" {
+variable "enable_ldap" {
   type    = bool
   default = false
 }
 
-variable "aap_admin_password" {
+variable "enable_mitmproxy" {
+  type    = bool
+  default = false
+}
+
+variable "enable_msft_dns_dhcp" {
+  type    = bool
+  default = false
+}
+
+variable "enable_postgres" {
+  type    = bool
+  default = false
+}
+
+variable "enable_rhel" {
+  type    = bool
+  default = false
+}
+
+variable "enable_saml" {
+  type    = bool
+  default = false
+}
+
+variable "enable_ubuntu" {
+  type    = bool
+  default = false
+}
+
+variable "enterprise_admin_password" {
+  type        = string
+  sensitive   = true
+  description = "A password of at least 12 characters for the NetBox Enterprise admin user."
+  validation {
+    condition     = length(var.enterprise_admin_password) >= 12
+    error_message = "NetBox Enterprise admin password must be at least 12 characters long."
+  }
+}
+
+variable "enterprise_console_password" {
+  type        = string
+  sensitive   = true
+  description = "A password of at least 6 characters for the NetBox Enterprise console user."
+  validation {
+    condition     = length(var.enterprise_console_password) >= 6
+    error_message = "NetBox Enterprise console password must be at least 6 characters long."
+  }
+}
+
+variable "enterprise_license_id" {
+  type        = string
+  sensitive   = true
+  description = "License ID supplied by Netbox Labs for your NetBox Enterprise instance."
+  validation {
+    condition     = length(var.enterprise_license_id) > 0
+    error_message = "NetBox Enterprise License ID must not be empty."
+  }
+}
+
+variable "nbl_registry_token" {
   type      = string
   sensitive = true
-  default   = ""
+}
+
+variable "nbl_registry_user" {
+  type      = string
+  sensitive = true
+}
+
+variable "postgres_password" {
+  type        = string
+  sensitive   = true
+  description = "A password of at least 8 characters for the PostgreSQL database."
+  validation {
+    condition     = length(var.postgres_password) >= 8
+    error_message = "PostgreSQL password must be at least 8 characters long."
+  }
 }
 
 variable "rh_client_id" {
@@ -172,13 +172,13 @@ variable "rh_client_secret" {
   default   = ""
 }
 
-variable "rh_registry_user" {
+variable "rh_registry_token" {
   type      = string
   sensitive = true
   default   = ""
 }
 
-variable "rh_registry_token" {
+variable "rh_registry_user" {
   type      = string
   sensitive = true
   default   = ""
