@@ -40,12 +40,13 @@ sed -i "s/'USER': '',\s*# PostgreSQL username/'USER': 'netbox',\t    # PostgreSQ
 sed -i "s/'PASSWORD': '',\s*# PostgreSQL password/'PASSWORD': 'box_of_nets',# PostgreSQL username/" configuration.py
 sed -i "s/^SECRET_KEY = ''/SECRET_KEY = '12345678901234567890123456789012345678901234567890'/" configuration.py
 echo 'API_TOKEN_PEPPERS = {1: "12345678901234567890123456789012345678901234567890"}' >> configuration.py
+sed -i "s/PLUGINS = \[\]/PLUGINS = ['netbox_custom_objects']/" configuration.py
+echo netboxlabs-netbox-custom-objects > /opt/netbox/local_requirements.txt
 PYTHON=/usr/bin/python3.12 /opt/netbox/upgrade.sh
 source /opt/netbox/venv/bin/activate
 cd /opt/netbox/netbox
 python3 manage.py createsuperuser --noinput --username admin --email ''
 python3 manage.py shell -c "from users.models import User; u = User.objects.get(username='admin'); u.set_password('admin'); u.save()"
-sudo ln -s /opt/netbox/contrib/netbox-housekeeping.sh /etc/cron.daily/netbox-housekeeping
 
 # gunicorn
 cp /opt/netbox/contrib/gunicorn.py /opt/netbox/gunicorn.py
@@ -78,17 +79,10 @@ sudo -u postgres psql -d netbox -c "GRANT CREATE ON SCHEMA public TO netbox;"
 
 wget https://raw.githubusercontent.com/netbox-community/netbox-demo-data/refs/heads/master/sql/netbox-demo-v4.7.sql
 sudo -u postgres psql netbox < netbox-demo-v4.7.sql
+python3 manage.py migrate
 
 systemctl start redis6
 systemctl start netbox
 systemctl start netbox-rq
 systemctl start nginx
 %{ endif ~}
-
-# plugins
-source /opt/netbox/venv/bin/activate
-pip install netboxlabs-netbox-custom-objects
-sed -i "s/PLUGINS = \[\]/PLUGINS = ['netbox_custom_objects']/" /opt/netbox/netbox/netbox/configuration.py
-cd /opt/netbox/netbox/
-python3 manage.py migrate
-systemctl restart netbox netbox-rq
