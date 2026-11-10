@@ -25,8 +25,9 @@ form{flex:1;min-height:0;padding:1em;overflow:auto;margin:0}
 #shell{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;background:#000}
 #shell .tabs{margin:.5em 1em;border-bottom:none}
 #shellterm{flex:1;min-height:0}
+#claude{position:absolute;inset:0;z-index:3;background:#000}
 /* padding goes on xterm's own element, the one the fit addon subtracts when sizing */
-#term .xterm{padding:.5em 0 0 1ch}
+#term .xterm,#claude .xterm{padding:.5em 0 0 1ch}
 #shellterm .xterm{padding-left:1ch}
 .tabs{display:flex;gap:1.5em;border-bottom:1px solid var(--pico-muted-border-color);margin-bottom:1em}
 .tabs a{padding:.5em 0;text-decoration:none;color:var(--pico-muted-color);border-bottom:2px solid transparent;margin-bottom:-1px}
@@ -58,7 +59,8 @@ form{flex:1;min-height:0;padding:1em;overflow:auto;margin:0}
 <div class=tabs>
 <a href=# id=termtab :aria-current="tab == 'terminal'" @click.prevent="tab = 'terminal'">terminal</a>
 <a href=# :aria-current="tab == 'output'" @click.prevent="tab = 'output'">output</a>
-<a href=# :aria-current="tab == 'shell'" @click.prevent="tab = 'shell'; hosts(); shterm.focus()">shell</a>
+<a href=# :aria-current="tab == 'shell'" @click.prevent="tab = 'shell'; hosts(); shell.term.focus()">shell</a>
+<a href=# :aria-current="tab == 'claude'" @click.prevent="tab = 'claude'; claude.open || claude.connect('/shell/claude'); claude.term.focus()">claude</a>
 </div>
 <div id=panes>
 <!-- output covers the terminal rather than the terminal being hidden, so xterm always has a real size to fit to -->
@@ -72,6 +74,7 @@ form{flex:1;min-height:0;padding:1em;overflow:auto;margin:0}
 <div class=tabs id=hosttabs></div>
 <div id=shellterm></div>
 </div>
+<div id=claude :style="{visibility: tab == 'claude' ? 'visible' : 'hidden'}"></div>
 </div>
 </div>
 <script>
@@ -129,34 +132,48 @@ sync();
 setInterval(sync, 1000);
 go('/tail');
 
-// shell tab: a view of the host's tmux session on the server, so a reload re-attaches instead of starting over
-const shterm = new Terminal({macOptionClickForcesSelection: true});
-const shfit = new FitAddon.FitAddon();
-shterm.loadAddon(shfit);
-shterm.loadAddon(new WebLinksAddon.WebLinksAddon());
-shterm.open(document.getElementById('shellterm'));
-shfit.fit();
-let ws, host;
-function size() {
-  shfit.fit();
-  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({cols: shterm.cols, rows: shterm.rows}));
+// shell and claude tabs: views of tmux sessions on the server, so a reload re-attaches instead of starting over
+function tmuxterm(id) {
+  const term = new Terminal({macOptionClickForcesSelection: true});
+  const fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  term.loadAddon(new WebLinksAddon.WebLinksAddon());
+  term.open(document.getElementById(id));
+  fit.fit();
+  let ws;
+  const t = {
+    term,
+    get open() { return ws?.readyState === WebSocket.OPEN; },
+    size() {
+      fit.fit();
+      if (t.open) ws.send(JSON.stringify({cols: term.cols, rows: term.rows}));
+    },
+    connect(path) {
+      if (ws) { ws.onclose = null; ws.close(); }
+      term.reset();
+      ws = new WebSocket(`ws://${location.host}${path}`);
+      ws.binaryType = 'arraybuffer';
+      ws.onopen = t.size;
+      ws.onmessage = e => term.write(new Uint8Array(e.data));
+      ws.onclose = () => term.write('\r\n[session closed]\r\n');
+    },
+  };
+  term.onData(d => t.open && ws.send(new TextEncoder().encode(d)));
+  return t;
 }
+const shell = tmuxterm('shellterm');
+const claude = tmuxterm('claude');
+let host;
 function mark() {
   document.querySelectorAll('#hosttabs a').forEach(a => a.toggleAttribute('aria-current', a.textContent === host));
 }
 function connect(h) {
   host = h;
   mark();
-  if (ws) { ws.onclose = null; ws.close(); }
-  shterm.reset();
-  if (!h) return shterm.write('no running hosts');
-  ws = new WebSocket(`ws://${location.host}/shell/${h}`);
-  ws.binaryType = 'arraybuffer';
-  ws.onopen = size;
-  ws.onmessage = e => shterm.write(new Uint8Array(e.data));
-  ws.onclose = () => shterm.write('\r\n[session closed]\r\n');
+  if (h) return shell.connect(`/shell/${h}`);
+  shell.term.reset();
+  shell.term.write('no running hosts');
 }
-shterm.onData(d => ws?.readyState === WebSocket.OPEN && ws.send(new TextEncoder().encode(d)));
 // a sub-tab per running host, rebuilt after every run; stays on the current host if it's still up, else
 // connects to the first one, so whatever an apply starts is connected without a click
 async function hosts() {
@@ -165,7 +182,7 @@ async function hosts() {
     const a = document.createElement('a');
     a.href = '#';
     a.textContent = h;
-    a.onclick = e => { e.preventDefault(); connect(h); shterm.focus(); };
+    a.onclick = e => { e.preventDefault(); connect(h); shell.term.focus(); };
     return a;
   }));
   if (names.includes(host)) mark();
@@ -173,7 +190,7 @@ async function hosts() {
 }
 hosts();
 
-onresize = () => { fit.fit(); size(); };
+onresize = () => { fit.fit(); shell.size(); claude.size(); };
 
 // text fields: orange while unsaved, green once saved, then back to normal
 addEventListener('input', e => {

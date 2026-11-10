@@ -4,6 +4,7 @@
 # ///
 # run: uv run ui/app.py
 import asyncio
+import contextlib
 import fcntl
 import json
 import os
@@ -35,8 +36,16 @@ LOG.touch()
 # shell tab sessions live on a private tmux server, one session per host, so they outlive the page
 # and can be read from outside it: tmux -L lab capture-pane -p -t <host>
 TMUX = ["tmux", "-L", "lab"]
+# the claude tab's session gets its own, so a destroy leaves it be and stopping the ui ends it
+CLAUDE_TMUX = ["tmux", "-L", "claude"]
 
-app = FastAPI()
+@contextlib.asynccontextmanager
+async def lifespan(app):
+    yield
+    subprocess.run([*CLAUDE_TMUX, "kill-server"], capture_output=True)
+
+
+app = FastAPI(lifespan=lifespan)
 # this server runs terraform and opens root shells, so it only answers its own page: the host check stops
 # DNS rebinding, and the origin check stops any other site open in the browser from posting or opening a shell
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
@@ -145,21 +154,26 @@ async def shell(ws: WebSocket, host: str):
         fix = "; ".join(installs[tool] for tool in missing)
         await ws.send_bytes(f"the shell tab needs {' and '.join(missing)}: {fix}\r\n".encode())
         return await ws.close()
-    cmd = hosts().get(host)
-    if cmd is None:
-        return await ws.close()
-    if subprocess.run([*TMUX, "has-session", "-t", host], capture_output=True).returncode:
+    if host == "claude":
+        # the claude tab: a local claude code, started where the ui was launched so it picks up that directory's mcp
+        # servers; /exit ends it, and the next visit starts a fresh one
+        tmux, cmd = CLAUDE_TMUX, "claude"
+    elif cmd := hosts().get(host):
+        tmux = TMUX
         # straight to a root shell, the first thing anyone does on these anyway
         cmd += " --document-name AWS-StartInteractiveCommand --parameters command='sudo -i'"
         # a new instance's ssm agent takes a minute or two to register, so keep trying until a session opens;
         # typing exit ends it cleanly, which ends the loop and the tmux session with it
-        retry = f"until {cmd}; do echo 'waiting for the ssm agent...'; sleep 5; done"
-        subprocess.run([*TMUX, "new-session", "-d", "-s", host, retry], check=True)
+        cmd = f"until {cmd}; do echo 'waiting for the ssm agent...'; sleep 5; done"
+    else:
+        return await ws.close()
+    if subprocess.run([*tmux, "has-session", "-t", host], capture_output=True).returncode:
+        subprocess.run([*tmux, "new-session", "-d", "-s", host, cmd], check=True)
     # the page is just another tmux client, attached through a pty
     pid, fd = pty.fork()
     if pid == 0:
         os.environ["TERM"] = "xterm-256color"
-        os.execvp("tmux", [*TMUX, "attach", "-t", host])
+        os.execvp("tmux", [*tmux, "attach", "-t", host])
     loop = asyncio.get_running_loop()
     out = asyncio.Queue()
 
