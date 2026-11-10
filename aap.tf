@@ -36,8 +36,8 @@ resource "aws_s3_object" "aap_installer" {
   count  = var.enable_aap ? 1 : 0
   bucket = aws_s3_bucket.files.id
   key    = "${local.aap_installer}.tar"
-  source = "${path.module}/${local.aap_installer}.tar"
-  etag   = filemd5("${path.module}/${local.aap_installer}.tar")
+  source = "${path.module}/aap-installer/${local.aap_installer}.tar"
+  etag   = filemd5("${path.module}/aap-installer/${local.aap_installer}.tar")
 }
 
 resource "aws_instance" "aap_instance" {

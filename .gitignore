@@ -45,5 +45,6 @@ terraform.rc
 !.env.example
 
 clab-images/
+aap-installer/
 
 *.log
