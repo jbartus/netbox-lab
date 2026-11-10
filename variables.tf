@@ -148,3 +148,38 @@ variable "enable_enterprise_dr" {
   type    = bool
   default = false
 }
+
+variable "enable_aap" {
+  type    = bool
+  default = false
+}
+
+variable "aap_admin_password" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "rh_client_id" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "rh_client_secret" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "rh_registry_user" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "rh_registry_token" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
