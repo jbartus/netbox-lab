@@ -37,6 +37,7 @@ resource "aws_instance" "orb_instance" {
   user_data = templatefile("${path.module}/orb.sh.tpl", {
     nbl_registry_user  = var.nbl_registry_user,
     nbl_registry_token = var.nbl_registry_token,
+    orb_pro            = var.enable_msft_dns_dhcp
     # route dockerd's agent pull through mitmproxy when enabled; empty otherwise
     proxy_url   = local.mitmproxy_proxy_url
     ca_cert_pem = local.mitmproxy_ca_cert

@@ -40,9 +40,12 @@ EOF
 
 systemctl enable --now docker
 
-# get the orb pro agent
+%{ if orb_pro ~}
 docker login quay.io -u '${nbl_registry_user}' -p '${nbl_registry_token}'
 docker pull quay.io/netboxlabs/orb-agent-pro:latest
+%{ else ~}
+docker pull netboxlabs/orb-agent:latest
+%{ endif ~}
 
 cd /root
 
@@ -83,7 +86,11 @@ docker run --env-file .env \
   --env-file proxy.env \
 %{ endif ~}
   --net host -d --name orb -v $${PWD}:/opt/orb/ \
+%{ if orb_pro ~}
   quay.io/netboxlabs/orb-agent-pro:latest run --config /opt/orb/orb.yaml
+%{ else ~}
+  netboxlabs/orb-agent:latest run --config /opt/orb/orb.yaml
+%{ endif ~}
 
 # follow the logs
 docker logs orb -f
