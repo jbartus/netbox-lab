@@ -1,11 +1,11 @@
 resource "aws_security_group" "orb" {
-  count  = var.enable_discovery ? 1 : 0
+  count  = var.enable_orb ? 1 : 0
   vpc_id = module.vpc.vpc_id
 }
 
 # allow outbound by default, but not if mitmproxy is enabled
 resource "aws_vpc_security_group_egress_rule" "orb_allow_all_out" {
-  count             = var.enable_discovery && !var.enable_mitmproxy ? 1 : 0
+  count             = var.enable_orb && !var.enable_mitmproxy ? 1 : 0
   security_group_id = aws_security_group.orb[0].id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
@@ -13,14 +13,14 @@ resource "aws_vpc_security_group_egress_rule" "orb_allow_all_out" {
 
 # proxy is the only way out, or nothing proves the traffic went through it
 resource "aws_vpc_security_group_egress_rule" "orb_allow_vpc_out" {
-  count             = var.enable_discovery && var.enable_mitmproxy ? 1 : 0
+  count             = var.enable_orb && var.enable_mitmproxy ? 1 : 0
   security_group_id = aws_security_group.orb[0].id
   cidr_ipv4         = module.vpc.vpc_cidr_block
   ip_protocol       = "-1"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "orb_allow_grafana_in" {
-  count             = var.enable_discovery ? 1 : 0
+  count             = var.enable_orb ? 1 : 0
   security_group_id = aws_security_group.orb[0].id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 3000
@@ -29,7 +29,7 @@ resource "aws_vpc_security_group_ingress_rule" "orb_allow_grafana_in" {
 }
 
 resource "aws_instance" "orb_instance" {
-  count                  = var.enable_discovery ? 1 : 0
+  count                  = var.enable_orb ? 1 : 0
   ami                    = data.aws_ssm_parameter.al2023_ami_arm64.value
   instance_type          = "t4g.large"
   subnet_id              = module.vpc.public_subnets[0]
@@ -38,6 +38,7 @@ resource "aws_instance" "orb_instance" {
     nbl_registry_user  = var.nbl_registry_user,
     nbl_registry_token = var.nbl_registry_token,
     orb_pro            = var.enable_msft_dns_dhcp
+    orb_telemetry      = var.enable_c8kv || var.enable_clab
     # route dockerd's agent pull through mitmproxy when enabled; empty otherwise
     proxy_url   = local.mitmproxy_proxy_url
     ca_cert_pem = local.mitmproxy_ca_cert
@@ -45,13 +46,16 @@ resource "aws_instance" "orb_instance" {
     # waits for enterprise's api token to give grafana a netbox data source
     enable_enterprise = var.enable_enterprise
     orb_yaml = templatefile("${path.module}/orb.yaml.tpl", {
-      public_subnet    = module.vpc.public_subnet_objects[0].cidr_block
-      c8kv_ip          = aws_instance.c8kv_instance[0].private_ip
-      msft_dns_dhcp_ip = var.enable_msft_dns_dhcp ? aws_instance.msft_dns_dhcp_instance[0].private_ip : ""
-      enable_clab      = var.enable_clab
+      public_subnet        = module.vpc.public_subnet_objects[0].cidr_block
+      c8kv_ip              = var.enable_c8kv ? aws_instance.c8kv_instance[0].private_ip : ""
+      msft_dns_dhcp_ip     = var.enable_msft_dns_dhcp ? aws_instance.msft_dns_dhcp_instance[0].private_ip : ""
+      enable_c8kv          = var.enable_c8kv
+      enable_clab          = var.enable_clab
+      enable_msft_dns_dhcp = var.enable_msft_dns_dhcp
     })
     telemetry_yaml = templatefile("${path.module}/orb-telemetry.yaml.tpl", {
-      c8kv_ip     = aws_instance.c8kv_instance[0].private_ip
+      c8kv_ip     = var.enable_c8kv ? aws_instance.c8kv_instance[0].private_ip : ""
+      enable_c8kv = var.enable_c8kv
       enable_clab = var.enable_clab
     })
     telemetry_dashboard = file("${path.module}/grafana-telemetry.json")
@@ -66,13 +70,13 @@ resource "aws_instance" "orb_instance" {
 }
 
 output "orb_ssm_command" {
-  value = var.enable_discovery ? "aws ssm start-session --target ${aws_instance.orb_instance[0].id}" : null
+  value = var.enable_orb ? "aws ssm start-session --target ${aws_instance.orb_instance[0].id}" : null
 }
 
 output "grafana_url" {
-  value = var.enable_discovery ? "http://${aws_instance.orb_instance[0].public_ip}:3000" : null
+  value = var.enable_orb ? "http://${aws_instance.orb_instance[0].public_ip}:3000" : null
 }
 
 output "orb_ssm_url" {
-  value = var.enable_discovery ? "https://${data.aws_region.current.region}.console.aws.amazon.com/systems-manager/session-manager/${aws_instance.orb_instance[0].id}?region=${data.aws_region.current.region}" : null
+  value = var.enable_orb ? "https://${data.aws_region.current.region}.console.aws.amazon.com/systems-manager/session-manager/${aws_instance.orb_instance[0].id}?region=${data.aws_region.current.region}" : null
 }

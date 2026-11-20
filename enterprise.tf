@@ -105,7 +105,7 @@ resource "aws_instance" "enterprise_instance" {
     proxy_url            = local.mitmproxy_proxy_url
     ca_cert_pem          = local.mitmproxy_ca_cert
     bucket               = aws_s3_bucket.files.id
-    enable_discovery     = var.enable_discovery
+    enable_orb           = var.enable_orb
     enable_msft_dns_dhcp = var.enable_msft_dns_dhcp
     enable_ansible       = var.enable_ansible
     ansible_ip           = var.enable_ansible ? aws_instance.ansible_instance[0].private_ip : ""

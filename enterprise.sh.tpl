@@ -76,7 +76,7 @@ until ./netbox-enterprise shell -c "kubectl exec -n kotsadm deploy/kotsadm -- /k
   --access-key-id ${access_key_id} \
   --secret-access-key ${secret_access_key}"; do sleep 30; done
 
-%{ if enable_discovery ~}
+%{ if enable_orb ~}
 # mint a diode ingest credential and publish it to s3 for the orb host to fetch
 # this is the same call the Client Credentials > Add button makes in the web ui
 cat << 'EOF' > mint-diode-creds.py

@@ -42,8 +42,8 @@ resource "aws_instance" "ansible_instance" {
 
   lifecycle {
     precondition {
-      condition     = var.enable_discovery
-      error_message = "Ansible requires enable_discovery = true (for the c8kv target)."
+      condition     = var.enable_c8kv
+      error_message = "Ansible requires enable_c8kv = true."
     }
   }
 }

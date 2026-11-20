@@ -106,8 +106,8 @@ https://helm.sh/docs/intro/install/#from-apt-debianubuntu
 - `community.tf` and `community.sh` setup netbox community (open source)
 - `enterprise.tf`, `enterprise.sh.tpl` and `config.yaml.tpl` setup netbox enterprise ("on-prem")
 - `mitmproxy*` sets up an outbound TLS proxy and routes the NBE install through it
-- `c8kv.tf` sets up a [Cisco 8000V](https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8000v-edge-software/catalyst-8000v-edge-software-ds.html) ec2 instance running ios xe.  it doesn't do anything but exist to be a target of scanning/discovery/configuration-automation.
-- `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent (pointed at the enterprise VM & the above "router" VM), including a vault instance for a test/dummy "secret"
+- `c8kv.tf` sets up a [Cisco 8000V](https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8000v-edge-software/catalyst-8000v-edge-software-ds.html) ec2 instance running ios xe.  a target for discovery and configuration automation.
+- `orb.tf`, `orb.sh.tpl` and `orb.yaml.tpl` setup the netbox orb discovery agent, pointed at whichever targets are enabled, including a vault instance for a test/dummy "secret"
 - `msft-dns-dhcp.tf` and `msft-dns-dhcp.ps1` setup a standalone windows server 2022 running both DNS and DHCP.  acts as a combined data source for the [NetBox Microsoft DNS integration](https://netboxlabs.com/docs/integrations/ms-dns/getting-started/) and the [NetBox Microsoft DHCP integration](https://netboxlabs.com/docs/integrations/ms-dhcp/getting-started/)
 - `eks.tf` sets up a small EKS cluster running on spot instances
 - `community-helm.sh` sets up netbox community using an external RDS db from `postgres.tf`

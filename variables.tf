@@ -20,6 +20,11 @@ variable "enable_ansible" {
   default = false
 }
 
+variable "enable_c8kv" {
+  type    = bool
+  default = false
+}
+
 variable "enable_catcenter" {
   type    = bool
   default = false
@@ -41,11 +46,6 @@ variable "enable_community" {
 }
 
 variable "enable_community_data" {
-  type    = bool
-  default = false
-}
-
-variable "enable_discovery" {
   type    = bool
   default = false
 }
@@ -86,6 +86,11 @@ variable "enable_mitmproxy" {
 }
 
 variable "enable_msft_dns_dhcp" {
+  type    = bool
+  default = false
+}
+
+variable "enable_orb" {
   type    = bool
   default = false
 }

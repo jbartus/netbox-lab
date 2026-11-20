@@ -5,13 +5,16 @@ orb:
     common:
       otlp:
         grpc: "grpc://127.0.0.1:4317"
+%{ if enable_c8kv ~}
     # the c8kv has no gnmi server, so it's polled over the snmp it already has
     snmp_telemetry:
+%{ endif ~}
 %{ if enable_clab ~}
     gnmi_telemetry:
       otel_export_period: 1
 %{ endif ~}
   policies:
+%{ if enable_c8kv ~}
     snmp_telemetry:
       c8kv:
         config:
@@ -22,6 +25,7 @@ orb:
           authentication:
             protocol_version: "v2c"
             community: "public"
+%{ endif ~}
 %{ if enable_clab ~}
     gnmi_telemetry:
       arista:

@@ -141,12 +141,14 @@ EOF
 ) > /dev/null 2>&1 &
 %{ endif ~}
 
+%{ if orb_telemetry ~}
 # telemetry gets its own always-on agent; the discovery one above waits for scan.sh and diode credentials
 cat << 'EOF' > telemetry.yaml
 ${telemetry_yaml}
 EOF
 docker run -d --name orb-telemetry --restart unless-stopped --net host -v $${PWD}:/opt/orb/ \
   netboxlabs/orb-agent:2.16.0 run --config /opt/orb/telemetry.yaml
+%{ endif ~}
 
 dnf -y install nmap net-snmp-utils net-snmp-libs
 

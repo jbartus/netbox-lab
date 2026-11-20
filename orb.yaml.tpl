@@ -31,21 +31,25 @@ orb:
             - ${public_subnet}
           fast_mode: True
           timing: 5
+%{ if enable_c8kv || enable_clab ~}
     device_discovery:
       device_policy:
         config:
           defaults:
             site: cloud-lab
         scope:
+%{ if enable_c8kv ~}
           - driver: ios
             hostname: ${c8kv_ip}
             username: iosuser
             password: "$${vault://secret/cisco/v8000/password}"
+%{ endif ~}
 %{ if enable_clab ~}
           - driver: eos
             hostname: 172.20.20.11-14
             username: admin
             password: "$${vault://secret/arista/ceos/password}"
+%{ endif ~}
 %{ endif ~}
 #    snmp_discovery:
 #      snmp_policy:
@@ -56,7 +60,7 @@ orb:
 #          authentication:
 #            protocol_version: "SNMPv2c"
 #            community: "public"
-%{ if msft_dns_dhcp_ip != "" ~}
+%{ if enable_msft_dns_dhcp ~}
     worker:
       msft_dns_worker:
         config:
