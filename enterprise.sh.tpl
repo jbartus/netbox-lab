@@ -119,7 +119,7 @@ TOKEN="nbt_$(jq -r .key <<< "$RESP").$(jq -r .token <<< "$RESP")"
 nb() { curl -skf -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://localhost/api/$1" -d "$2"; }
 
 # change management policy: one admin approval required to merge a branch
-POLICY_ID=$(nb plugins/changes/policies/ '{"name": "require-approval"}' | jq -r .id)
+POLICY_ID=$(nb plugins/changes/policies/ '{"name": "require-approval", "is_default": true}' | jq -r .id)
 nb plugins/changes/policy-rules/ "{\"policy\": $POLICY_ID, \"name\": \"at-least-one-admin\", \"min_reviews\": 1, \"reviewers\": [$(jq -r .user.id <<< "$RESP")]}"
 
 # hand the api token to the ansible and orb hosts, which wait for this file
